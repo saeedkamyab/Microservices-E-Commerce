@@ -47,6 +47,10 @@ public sealed class Product
     public static Product Create(ProductName name, string? description,
       Guid categoryId, Price price)
     {
+
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(price);
+
         if (categoryId == Guid.Empty)
             throw new ArgumentException(
                 "Category is required.",
