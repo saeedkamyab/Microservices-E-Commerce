@@ -1,7 +1,6 @@
 ﻿using Catalog.Application.Abstractions.Persistence;
 using Catalog.Application.Abstractions.Persistence.Repositories;
 using Catalog.Domain.Entities;
-using Catalog.Domain.Enums;
 using Catalog.Domain.ValueObjects;
 using MediatR;
 
@@ -33,31 +32,23 @@ public sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCategor
             CategoryName.Create(request.Name),
             request.ParentCategoryId);
 
-        foreach (var attribute in request.Attributes)
-        {
-            var attributeDefiniation = CategoryAttributeDefinition.Create(
-                Name.Create(attribute.Name),
-                attribute.Type,
-                attribute.IsRequired);
-            if (attribute.Type == AttributeType.Option)
+            foreach (var attribute in request.Attributes)
             {
-                if (attribute.Options.Count == 0)
-                {
-                    throw new InvalidOperationException(
-                        $"Option attribute '{attribute.Name}' must have at least one option.");
-                }
+                var attributeDefinition = CategoryAttributeDefinition.Create(
+                    Name.Create(attribute.Name),
+                    attribute.Type,
+                    attribute.IsRequired);
+
                 foreach (var option in attribute.Options)
                 {
-                    attributeDefiniation.AddOption(AttributeOption.Create(option));
+                    attributeDefinition.AddOption(AttributeOption.Create(option));
                 }
+
+                category.AddAttributeDefinition(attributeDefinition);
             }
-            else if (attribute.Options.Count > 0)
-            {
-                throw new InvalidOperationException(
-                     $"Attribute '{attribute.Name}' cannot have options because it is not of type Option.");
-            }
-            category.AddAttributeDefinition(attributeDefiniation);
-        }
+
+
+
         await _categoryRepository.AddAsync(category, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return category.Id;

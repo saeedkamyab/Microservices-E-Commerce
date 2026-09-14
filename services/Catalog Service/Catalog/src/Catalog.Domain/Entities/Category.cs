@@ -8,7 +8,7 @@ public sealed class Category
     public Guid Id { get; private set; }
     public CategoryName CategoryName { get; private set; } = null!;
     public Guid? ParentCategoryId { get; private set; }
-    public CategoryStatus Status { get;private set; }
+    public CategoryStatus Status { get; private set; }
 
     private readonly List<CategoryAttributeDefinition> _attributeDefinitions = new();
 
@@ -74,6 +74,16 @@ public sealed class Category
         {
             throw new InvalidOperationException(
            "An attribute with the same name already exists.");
+        }
+        if (definition.Type == AttributeType.Option && definition.Options.Count == 0)
+        {
+            throw new InvalidOperationException(
+                       "attribute with option type must have at least one option.");
+        }
+        if (definition.Type != AttributeType.Option && definition.Options.Count > 0)
+        {
+            throw new InvalidOperationException(
+                       "Only attributes of type Option can have options.");
         }
         _attributeDefinitions.Add(definition);
 
