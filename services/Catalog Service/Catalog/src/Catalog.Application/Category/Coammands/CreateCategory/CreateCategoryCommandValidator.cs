@@ -13,5 +13,17 @@ public class CreateCategoryCommandValidator:AbstractValidator<CreateCategoryComm
         RuleFor(x=>x.Attributes)
             .NotEmpty()
             .WithMessage("Attributes are required.");
+        
+        RuleForEach(x => x.Attributes)
+           .ChildRules(attribute =>
+           {
+               attribute.RuleFor(x => x.Name)
+                   .NotEmpty()
+                   .WithMessage("Attribute name is required.");
+
+               attribute.RuleFor(x => x.Options)
+                   .NotNull()
+                   .WithMessage("Attribute options cannot be null.");
+           });
     }
 }
