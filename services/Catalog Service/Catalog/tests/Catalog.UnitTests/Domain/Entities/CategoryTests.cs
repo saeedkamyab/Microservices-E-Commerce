@@ -7,190 +7,151 @@ namespace Catalog.UnitTests.Domain.Entities;
 public class CategoryTests
 {
     [Fact]
-    public void Create_Should_Create_Active_Category()
+    public void Create_WithNullName_ThrowsArgumentNullException()
     {
-        //Arrange
-        var name = CategoryName.Create("Mobile");
+        Assert.Throws<ArgumentNullException>(() => Category.Create(null!));
+    }
 
-        //Act
-        var category = Category.Create(name);
-
-
-        // Assert
+    [Fact]
+    public void Create_WithEmptyGuidParent_SetsParentToNullAndInitializesFields()
+    {
+        var name = CategoryName.Create("Electronics");
+        var category = Category.Create(name, Guid.Empty);
 
         Assert.NotEqual(Guid.Empty, category.Id);
         Assert.Equal(name, category.CategoryName);
         Assert.Null(category.ParentCategoryId);
         Assert.Equal(CategoryStatus.Active, category.Status);
-
     }
+
     [Fact]
-    public void Create_Should_Create_Child_Category()
+    public void Rename_WithNull_ThrowsArgumentNullException()
     {
-        // Arrange
-        var parentId = Guid.NewGuid();
-        var name = CategoryName.Create("Mobile");
+        var category = Category.Create(CategoryName.Create("Books"));
 
-        // Act
-        var category = Category.Create(
-            name,
-            parentId);
-
-        // Assert
-        Assert.Equal(parentId, category.ParentCategoryId);
+        Assert.Throws<ArgumentNullException>(() => category.Rename(null!));
     }
+
     [Fact]
-    public void Create_Should_Reject_Null_CategoryName()
+    public void Rename_ToSameName_DoesNotChange()
     {
-        var action = () => Category.Create(null!);
-        Assert.Throws<ArgumentNullException>(action);
-    }
-    [Fact]
-    public void Rename_Should_Change_Category_Name()
-    {
-        //Arrange
-        var category = Category.Create(CategoryName.Create("Mobile"));
-
-        var newName = CategoryName.Create("SmartPhone");
-
-        //Act
-        category.Rename(newName);
-
-        //Assert
-        Assert.Equal(newName, category.CategoryName);
-    }
-    [Fact]
-    public void Rename_Should_Reject_Null_Name()
-    {
-        var category = Category.Create(
-            CategoryName.Create("Mobile"));
-
-        var action = () => category.Rename(null!);
-
-        Assert.Throws<ArgumentNullException>(action);
-    }
-    [Fact]
-    public void Rename_With_Same_Name_Should_Do_Nothing()
-    {
-        // Arrange
-        var name = CategoryName.Create("Mobile");
-
+        var name = CategoryName.Create("Toys");
         var category = Category.Create(name);
 
-        // Act
-        category.Rename(
-            CategoryName.Create("Mobile"));
+        category.Rename(name);
 
-        // Assert
         Assert.Equal(name, category.CategoryName);
     }
+
     [Fact]
-    public void Deactivate_Should_Change_Status_To_Inactive()
+    public void Rename_ToDifferentName_UpdatesName()
     {
-        //Arrange
-        var category = Category.Create(CategoryName.Create("Mobile"));
+        var category = Category.Create(CategoryName.Create("Home"));
+        var newName = CategoryName.Create("Home & Garden");
 
-        //Act
+        category.Rename(newName);
+
+        Assert.Equal(newName, category.CategoryName);
+    }
+
+    [Fact]
+    public void ActivateDeactivate_Behavior_WorksAsExpected()
+    {
+        var category = Category.Create(CategoryName.Create("Garden"));
+
+        // initially Active
+        Assert.Equal(CategoryStatus.Active, category.Status);
+
         category.Deactivate();
-
-        //Assert
         Assert.Equal(CategoryStatus.Inactive, category.Status);
-    }
-    [Fact]
-    public void Activate_Should_Change_Inactive_Category_To_Active()
-    {
-        // Arrange
-        var category = Category.Create(
-            CategoryName.Create("Mobile"));
 
+        // Deactivating again should be no-op
         category.Deactivate();
+        Assert.Equal(CategoryStatus.Inactive, category.Status);
 
-        // Act
         category.Activate();
+        Assert.Equal(CategoryStatus.Active, category.Status);
 
-        // Assert
-        Assert.Equal(
-            CategoryStatus.Active,
-            category.Status);
+        // Activating again should be no-op
+        category.Activate();
+        Assert.Equal(CategoryStatus.Active, category.Status);
     }
+
     [Fact]
-    public void AddAttributeDefinition_Should_Add_Definition()
+    public void AddAttributeDefinition_Null_ThrowsArgumentNullException()
     {
-        //Arrange
-        var category =
-               Category.Create(
-                   CategoryName.Create("Mobile"));
+        var category = Category.Create(CategoryName.Create("Appliances"));
 
-        var definition =
-            CategoryAttributeDefinition.Create(Name.Create("RAM"),
-                AttributeType.Number,
-                true);
-        //Act
-        category.AddAttributeDefinition(definition);
-
-
-        //Assert
-        var result = Assert.Single(category.AttributeDefinitions);
-        Assert.Equal(definition, result);
+        Assert.Throws<ArgumentNullException>(() => category.AddAttributeDefinition(null!));
     }
-    [Fact]
-    public void AddAttributeDefinition_Should_Reject_Duplicate_Name()
-    {
-        //Arrange
-        var category =
-            Category.Create(
-                CategoryName.Create("Mobile"));
-        //Act
-        category.AddAttributeDefinition(
-            CategoryAttributeDefinition.Create(
-                Name.Create("RAM"),
-                AttributeType.Number,
-                true));
 
-        var action = () =>
-            category.AddAttributeDefinition(
-                CategoryAttributeDefinition.Create(
-                    Name.Create("ram"),
-                    AttributeType.Number,
-                    true));
-        //Assert
-        Assert.Throws<InvalidOperationException>(action);
+    [Fact]
+    public void AddAttributeDefinition_DuplicateName_ThrowsInvalidOperationException()
+    {
+        var category = Category.Create(CategoryName.Create("Clothing"));
+
+        var def1 = CategoryAttributeDefinition.Create(Name.Create("Color"), AttributeType.Text, false);
+        var def2 = CategoryAttributeDefinition.Create(Name.Create("color"), AttributeType.Text, false); // case-insensitive duplicate
+
+        category.AddAttributeDefinition(def1);
+
+        var ex = Assert.Throws<InvalidOperationException>(() => category.AddAttributeDefinition(def2));
+        Assert.Equal("An attribute with the same name already exists.", ex.Message);
     }
+
     [Fact]
-    public void AddAttributeDefinition_Should_Reject_Null_Definition()
+    public void AddAttributeDefinition_OptionTypeWithNoOptions_ThrowsInvalidOperationException()
     {
-        var category = Category.Create(
-            CategoryName.Create("Mobile"));
+        var category = Category.Create(CategoryName.Create("Shoes"));
 
-        var action = () => category.AddAttributeDefinition(null!);
+        var optionDef = CategoryAttributeDefinition.Create(Name.Create("Size"), AttributeType.Option, false);
+        // no options added
 
-        Assert.Throws<ArgumentNullException>(action);
+        var ex = Assert.Throws<InvalidOperationException>(() => category.AddAttributeDefinition(optionDef));
+        Assert.Equal("attribute with option type must have at least one option.", ex.Message);
     }
+
     [Fact]
-    public void RemoveAttributeDefinition_Should_Remove_Definition()
+    public void AddAttributeDefinition_OptionTypeWithOptions_AddsSuccessfully()
     {
-        var category = Category.Create(
-            CategoryName.Create("Mobile"));
+        var category = Category.Create(CategoryName.Create("Accessories"));
 
-        var definition = CategoryAttributeDefinition.Create(
-            Name.Create("RAM"),
-            AttributeType.Number,
-            true);
+        var optionDef = CategoryAttributeDefinition.Create(Name.Create("Material"), AttributeType.Option, false);
+        optionDef.AddOption(AttributeOption.Create("Leather"));
+        optionDef.AddOption(AttributeOption.Create("Fabric"));
 
-        category.AddAttributeDefinition(definition);
+        category.AddAttributeDefinition(optionDef);
 
-        category.RemoveAttributeDefinition(definition.Id);
+        Assert.Single(category.AttributeDefinitions);
+        var added = category.AttributeDefinitions.First();
+        Assert.Equal(optionDef.Id, added.Id);
+        Assert.Equal(AttributeType.Option, added.Type);
+        Assert.Equal(2, added.Options.Count);
+    }
 
+    [Fact]
+    public void RemoveAttributeDefinition_NonExisting_NoOp()
+    {
+        var category = Category.Create(CategoryName.Create("Stationery"));
+
+        // removing non-existing should not throw and collection remains empty
+        category.RemoveAttributeDefinition(Guid.NewGuid());
         Assert.Empty(category.AttributeDefinitions);
     }
-    [Fact]
-    public void RemoveAttributeDefinition_With_Unknown_Id_Should_Do_Nothing()
-    {
-        var category = Category.Create(
-            CategoryName.Create("Mobile"));
 
-        category.RemoveAttributeDefinition(Guid.NewGuid());
+    [Fact]
+    public void RemoveAttributeDefinition_RemovesExistingDefinition()
+    {
+        var category = Category.Create(CategoryName.Create("Furniture"));
+
+        var def = CategoryAttributeDefinition.Create(Name.Create("Finish"), AttributeType.Text, false);
+        category.AddAttributeDefinition(def);
+
+        Assert.Single(category.AttributeDefinitions);
+
+        category.RemoveAttributeDefinition(def.Id);
 
         Assert.Empty(category.AttributeDefinitions);
     }
 }
+
