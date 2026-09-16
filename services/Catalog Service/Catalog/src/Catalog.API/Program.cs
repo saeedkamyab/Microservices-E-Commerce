@@ -28,7 +28,11 @@ builder.Services
         tracing
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
-            .AddConsoleExporter();
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri(
+                    "http://localhost:4317");
+            });
     });
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
