@@ -1,0 +1,81 @@
+﻿
+
+
+
+<div class="mb-3">
+    <label class="form-label">Category Name</label>
+    <input class="form-control" @bind="Model.Name" />
+</div>
+
+<hr />
+
+<h4>Attributes</h4>
+
+@foreach (var attribute in Model.Attributes)
+{
+    <div class="border rounded p-3 mb-3">
+
+        <div class="mb-2">
+            <label class="form-label">Attribute Name</label>
+            <input class="form-control" @bind="attribute.Name" />
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label">Type</label>
+
+            <select class="form-select" @bind="attribute.Type">
+                <option value="1">Text</option>
+                <option value="2">Number</option>
+                <option value="3">Decimal</option>
+                <option value="4">Boolean</option>
+                <option value="5">Date</option>
+                <option value="6">Option</option>
+            </select>
+        </div>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input"
+                   type="checkbox"
+                   @bind="attribute.IsRequired" />
+
+            <label class="form-check-label">
+                Required
+            </label>
+        </div>
+
+        <button class="btn btn-danger"
+                @onclick="() => RemoveAttribute(attribute)">
+            Remove
+        </button>
+    </div>
+}
+
+<button class="btn btn-secondary mb-3"
+        @onclick="AddAttribute">
+    Add Attribute
+</button>
+
+<br />
+
+<button class="btn btn-primary"
+        @onclick="CreateCategory"
+        disabled="@IsSubmitting">
+    Create Category
+</button>
+
+@if (!string.IsNullOrWhiteSpace(SuccessMessage))
+{
+    <div class="alert alert-success mt-3" role="alert">
+        @SuccessMessage
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        @ErrorMessage
+    </div>
+}
+
+
+

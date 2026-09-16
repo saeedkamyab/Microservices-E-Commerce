@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BackOffice.ApiClient/BackOffice.ApiClient.csproj" Id="b692dcce-6973-489c-b815-0b3f28cfc769" />
+  <Project Path="BackOffice.Components/BackOffice.Components.csproj" Id="9d0c5618-177b-4ddc-8762-39a11f0f453c" />
+  <Project Path="BackOffice.Contracts/BackOffice.Contracts.csproj" Id="7ad3347f-0d15-4a13-b1f3-8606dbe84618" />
+  <Project Path="BackOffice.Web/BackOffice.Web.csproj" />
+</Solution>
