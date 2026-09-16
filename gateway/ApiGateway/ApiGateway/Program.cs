@@ -26,7 +26,11 @@ builder.Services.AddOpenTelemetry()
     {
         tracing.AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
-        .AddConsoleExporter();
+      .AddOtlpExporter(options =>
+      {
+          options.Endpoint = new Uri(
+              "http://localhost:4317");
+      });
     });
     
 
