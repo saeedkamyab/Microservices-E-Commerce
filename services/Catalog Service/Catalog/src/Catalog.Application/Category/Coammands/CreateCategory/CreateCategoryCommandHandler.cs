@@ -4,6 +4,7 @@ using Catalog.Application.Exceptions;
 using Catalog.Domain.Entities;
 using Catalog.Domain.ValueObjects;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Catalog.Application.Category.Coammands.CreateCategory;
 
@@ -11,7 +12,6 @@ public sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCategor
 {
     private readonly ICategoryRepository _categoryRepository;
     private readonly IUnitOfWork _unitOfWork;
-
     public CreateCategoryCommandHandler(ICategoryRepository categoryRepository, IUnitOfWork unitOfWork)
     {
         _categoryRepository = categoryRepository;
