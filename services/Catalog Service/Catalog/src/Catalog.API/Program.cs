@@ -2,6 +2,8 @@ using Catalog.API;
 using Catalog.API.Exceptions;
 using Catalog.Application;
 using Catalog.Infrastructure;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,18 @@ builder.Host.UseSerilog(
     {
         configuration
             .ReadFrom.Configuration(context.Configuration);
+    });
+
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource =>
+        resource.AddService("Catalog.API"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddConsoleExporter();
     });
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
