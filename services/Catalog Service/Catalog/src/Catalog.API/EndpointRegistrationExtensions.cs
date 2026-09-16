@@ -1,0 +1,12 @@
+﻿using Catalog.API.Endpoints.Categories;
+
+namespace Catalog.API
+{
+    public static class EndpointRegistrationExtensions
+    {
+        public static void MapCatalogEndpoints(this WebApplication app)
+        {
+            app.MapCreateCategoryEndpoint();
+        }
+    }
+}

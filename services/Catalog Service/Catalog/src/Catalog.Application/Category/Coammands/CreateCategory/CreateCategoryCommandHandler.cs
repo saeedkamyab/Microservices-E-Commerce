@@ -1,5 +1,6 @@
 ﻿using Catalog.Application.Abstractions.Persistence;
 using Catalog.Application.Abstractions.Persistence.Repositories;
+using Catalog.Application.Exceptions;
 using Catalog.Domain.Entities;
 using Catalog.Domain.ValueObjects;
 using MediatR;
@@ -25,7 +26,7 @@ public sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCategor
                 request.ParentCategoryId.Value, cancellationToken);
             if (parentCategory is null)
             {
-                throw new InvalidOperationException("Parent category was not found.");
+                throw new NotFoundException("Parent category was not found.");
             }
         }
         var category = Domain.Entities.Category.Create(

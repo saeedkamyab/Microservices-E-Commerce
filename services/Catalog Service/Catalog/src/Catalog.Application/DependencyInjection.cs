@@ -1,7 +1,8 @@
 ﻿using Catalog.Application.Behaviors;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-
+using System.Reflection;
+using FluentValidation;
 namespace Catalog.Application;
 
 public static class DependencyInjection
@@ -12,6 +13,8 @@ public static class DependencyInjection
         services.AddMediatR(config =>
            config.RegisterServicesFromAssembly(
                typeof(DependencyInjection).Assembly));
+
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         services.AddTransient(
 typeof(IPipelineBehavior<,>),

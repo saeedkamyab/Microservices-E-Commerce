@@ -40,7 +40,18 @@ public sealed class CategoryAttributeDefinition
            type,
            isRequired);
     }
-
+    public static CategoryAttributeDefinition Rehydrate(
+    Guid id,
+    Name name,
+    AttributeType type,
+    bool isRequired)
+    {
+        return new CategoryAttributeDefinition(
+            id,
+            name,
+            type,
+            isRequired);
+    }
     public void AddOption(AttributeOption option)
     {
         ArgumentNullException.ThrowIfNull(option);
