@@ -1,0 +1,49 @@
+services:
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: ecommerce-tempo
+    command:
+      - "-config.file=/etc/tempo.yml"
+    volumes:
+      - ./tempo.yml:/etc/tempo.yml
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"
+    networks:
+      - observability
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: ecommerce-otel-collector
+    command:
+      - "--config=/etc/otelcol-contrib/config.yaml"
+    volumes:
+      - ./otel-collector.yml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - tempo
+    networks:
+      - observability
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ecommerce-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - tempo
+    networks:
+      - observability
+
+networks:
+  observability:
+
+volumes:
+  tempo-data:
+  grafana-data:
