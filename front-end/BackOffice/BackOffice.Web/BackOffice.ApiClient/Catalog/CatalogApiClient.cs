@@ -20,7 +20,7 @@ internal class CatalogApiClient : ICatalogApiClient
         try
         {
             var response = await _httpClient.PostAsJsonAsync(
-                   "api/categories",
+                   "api/catalog/categories",
                    request,
                    cancellationToken);
 
