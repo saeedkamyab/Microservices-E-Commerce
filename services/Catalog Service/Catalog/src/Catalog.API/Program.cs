@@ -2,6 +2,7 @@ using Catalog.API;
 using Catalog.API.Exceptions;
 using Catalog.Application;
 using Catalog.Infrastructure;
+using Npgsql;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -28,10 +29,11 @@ builder.Services
         tracing
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
+            .AddNpgsql()
             .AddOtlpExporter(options =>
             {
-                options.Endpoint = new Uri(
-                    "http://localhost:4317");
+                options.Endpoint =
+                    new Uri("http://localhost:4317");
             });
     });
 
