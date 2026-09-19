@@ -1,7 +1,9 @@
 ﻿using Catalog.Application.Abstractions.Persistence;
 using Catalog.Application.Abstractions.Persistence.Repositories;
+using Catalog.Application.Abstractions.Persistence.Repositories.Queries;
 using Catalog.Infrastructure.Persistence;
 using Catalog.Infrastructure.Persistence.Repositories;
+using Catalog.Infrastructure.Persistence.Repositories.Queries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,11 +22,20 @@ public static class DependencyInjection
           ?? throw new InvalidOperationException(
               "Connection string 'CatalogDatabaseConnection' was not found.");
 
+        services
+        .AddHealthChecks()
+        .AddNpgSql(
+        configuration.GetConnectionString(
+            "CatalogDatabaseConnection")!);
+
         services.AddDbContext<CatalogDbContext>(options =>
             options.UseNpgsql(connectionString));
 
 
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ICategoryReadService, CategoryReadService>();
+
+
         services.AddScoped<IUnitOfWork> (sp =>
             sp.GetRequiredService<CatalogDbContext>());
 

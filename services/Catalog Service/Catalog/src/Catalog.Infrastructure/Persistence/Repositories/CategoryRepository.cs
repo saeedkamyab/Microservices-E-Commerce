@@ -14,7 +14,6 @@ internal sealed class CategoryRepository : ICategoryRepository
     {
         _dbContext = dbContext;
     }
-
     public async Task<Category?> GetByIdAsync(
      Guid id,
      CancellationToken cancellationToken)
@@ -106,4 +105,5 @@ internal sealed class CategoryRepository : ICategoryRepository
         }
     }
 
+    
 }

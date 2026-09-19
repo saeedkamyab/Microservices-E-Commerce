@@ -2,7 +2,10 @@ using Catalog.API;
 using Catalog.API.Exceptions;
 using Catalog.Application;
 using Catalog.Infrastructure;
+using Catalog.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -20,6 +23,11 @@ builder.Host.UseSerilog(
             .ReadFrom.Configuration(context.Configuration);
     });
 
+
+var otlpEndpoint =
+    builder.Configuration["OpenTelemetry:OtlpEndpoint"]
+    ?? "http://localhost:4317";
+
 builder.Services
     .AddOpenTelemetry()
     .ConfigureResource(resource =>
@@ -33,11 +41,22 @@ builder.Services
             .AddOtlpExporter(options =>
             {
                 options.Endpoint =
-                    new Uri("http://localhost:4317");
+                    new Uri(otlpEndpoint);
             });
-    });
+    })
+     .WithMetrics(metrics =>
+     {
+         metrics
+             .AddAspNetCoreInstrumentation()
+             .AddHttpClientInstrumentation()
+             .AddOtlpExporter(options =>
+             {
+                 options.Endpoint =
+                     new Uri(otlpEndpoint);
+             });
+     });
 
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 
@@ -52,6 +71,17 @@ app.UseSerilogRequestLogging();
 app.MapCatalogEndpoints();
 
 app.UseExceptionHandler();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider
+        .GetRequiredService<CatalogDbContext>();
+
+    dbContext.Database.Migrate();
+}
+
+app.MapHealthChecks("/health");
 
 app.Run();
 

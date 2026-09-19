@@ -6,6 +6,8 @@ namespace Catalog.API
     {
         public static void MapCatalogEndpoints(this WebApplication app)
         {
+            app.MapGetCategoriesEndpoint();
+            app.MapGetCategoryByIdEndpoint();
             app.MapCreateCategoryEndpoint();
         }
     }
