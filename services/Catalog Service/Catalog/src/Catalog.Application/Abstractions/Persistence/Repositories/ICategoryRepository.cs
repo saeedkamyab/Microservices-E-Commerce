@@ -8,6 +8,10 @@ public interface ICategoryRepository
        Guid id,
        CancellationToken cancellationToken);
 
+    Task<Domain.Entities.Category?> GetWithAttributeDefinitionsAsync(
+   Guid id,
+   CancellationToken cancellationToken);
+
     Task AddAsync(
       Domain.Entities.Category category,
       CancellationToken cancellationToken);

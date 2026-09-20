@@ -1,5 +1,6 @@
 ﻿using Catalog.Application.Category.Queries.GetCategories;
 using MediatR;
+using static Catalog.Application.Common.SortEnum;
 
 namespace Catalog.API.Endpoints.Categories;
 
@@ -12,6 +13,9 @@ public static class GetCategoriesEndpoint
             "/api/categories",
             async (
                 string? search,
+                string? status,
+                string? sortBy,
+                string? sortDirection,
                 int? pageNumber,
                 int? pageSize,
                 ISender sender,
@@ -19,6 +23,9 @@ public static class GetCategoriesEndpoint
             {
                 var query = new GetCategoriesQuery(
                     Search: search,
+                    Status: status ,
+                    SortBy: sortBy ,
+                    SortDirection: sortDirection,
                     PageNumber: pageNumber ?? 1,
                     PageSize: pageSize ?? 20);
 
@@ -65,3 +72,4 @@ public static class GetCategoriesEndpoint
         Guid? ParentCategoryId,
         string? ParentCategoryName);
 }
+

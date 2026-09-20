@@ -19,5 +19,27 @@ public sealed class GetCategoriesQueryValidator
        .MaximumLength(100)
        .When(x => !string.IsNullOrWhiteSpace(x.Search))
        .WithMessage("Search must not exceed 100 characters.");
+
+        RuleFor(x => x.Status)
+         .Must(status =>
+             string.IsNullOrWhiteSpace(status) ||
+             status.Equals("active", StringComparison.OrdinalIgnoreCase) ||
+             status.Equals("inactive", StringComparison.OrdinalIgnoreCase))
+         .WithMessage("Status must be either 'active' or 'inactive'.");
+
+        RuleFor(x => x.SortBy)
+            .Must(sortBy =>
+                string.IsNullOrWhiteSpace(sortBy) ||
+                sortBy.Equals("name", StringComparison.OrdinalIgnoreCase) ||
+                sortBy.Equals("status", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("SortBy must be either 'name' or 'status'.");
+
+        RuleFor(x => x.SortDirection)
+            .Must(direction =>
+                string.IsNullOrWhiteSpace(direction) ||
+                direction.Equals("asc", StringComparison.OrdinalIgnoreCase) ||
+                direction.Equals("desc", StringComparison.OrdinalIgnoreCase))
+            .WithMessage("SortDirection must be either 'asc' or 'desc'.");
+
     }
 }
