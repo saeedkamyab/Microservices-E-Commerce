@@ -1,0 +1,125 @@
+using BackOffice.ApiClient.Catalog.Interfaces;
+using BackOffice.Contracts.Catalog.Category;
+using Microsoft.AspNetCore.Components;
+
+namespace BackOffice.Components.Components.Category;
+
+public partial class CategoryList
+{
+    [Inject]
+    private ICatalogApiClient CatalogApiClient { get; set; } = null!;
+
+    private PagedResponse<CategoryListItemResponse>? Result;
+
+    private string Search { get; set; } = string.Empty;
+
+    private string Status { get; set; } = string.Empty;
+
+    private int PageNumber { get; set; } = 1;
+
+    private const int PageSize = 20;
+
+    private bool IsLoading;
+
+    private string? ErrorMessage;
+
+    private bool IsCreateModalVisible;
+
+    private string? SuccessMessage;
+    protected override async Task OnInitializedAsync()
+    {
+       
+        await LoadCategoriesAsync();
+    }
+    
+    private void OpenCreateModal()
+    {
+        SuccessMessage = null;
+        IsCreateModalVisible = true;
+    }
+
+    private async Task HandleCategoryCreated()
+    {
+        IsCreateModalVisible = false;
+
+        PageNumber = 1;
+
+        await LoadCategoriesAsync();
+
+        SuccessMessage = "Category created successfully.";
+    }
+
+    private async Task SearchAsync()
+    {
+        SuccessMessage = null;
+        PageNumber = 1;
+
+        await LoadCategoriesAsync();
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        if (Result?.HasPreviousPage != true)
+            return;
+
+        PageNumber--;
+
+        await LoadCategoriesAsync();
+    }
+
+    private async Task NextPageAsync()
+    {
+        if (Result?.HasNextPage != true)
+            return;
+
+        PageNumber++;
+
+        await LoadCategoriesAsync();
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = null;
+
+            Result = await CatalogApiClient.GetCategoriesAsync(
+                search: Search,
+                status: Status,
+                sortBy: "name",
+                sortDirection: "asc",
+                pageNumber: PageNumber,
+                pageSize: PageSize);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task ChangeStatusAsync(
+     CategoryListItemResponse category,
+     bool isActive)
+    {
+
+        var result = isActive
+            ? await CatalogApiClient.ActivateCategoryAsync(category.Id)
+            : await CatalogApiClient.DeactivateCategoryAsync(category.Id);
+
+        if (!result.IsSuccess)
+        {
+            ErrorMessage =
+                result.Error?.Message ?? "Failed to change category status.";
+
+            await LoadCategoriesAsync();
+            return;
+        }
+
+        await LoadCategoriesAsync();
+    }
+}

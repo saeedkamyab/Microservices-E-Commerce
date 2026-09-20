@@ -1,0 +1,13 @@
+﻿.modal-auto-size {
+    width: fit-content;
+    max-width: 90vw;
+}
+
+    .modal-auto-size .modal-content {
+        width: max-content;
+        max-width: 90vw;
+    }
+
+    .modal-auto-size .modal-body {
+        overflow-x: auto;
+    }

@@ -1,5 +1,4 @@
-﻿
-
+﻿<div class="main-container">
 
 
 <div class="mb-3">
@@ -11,19 +10,17 @@
 
 <h4>Attributes</h4>
 
-@foreach (var attribute in Model.Attributes)
-{
-    <div class="border rounded p-3 mb-3">
-
+<div class="border rounded p-3 mb-3">
+    <div class="form-group">
         <div class="mb-2">
             <label class="form-label">Attribute Name</label>
-            <input class="form-control" @bind="attribute.Name" />
+            <input class="form-control" @bind="CategoryAttribute.Name" />
         </div>
 
         <div class="mb-2">
             <label class="form-label">Type</label>
 
-            <select class="form-select" @bind="attribute.Type">
+        <select class="form-select" @bind="CategoryAttribute.Type">
                 <option value="1">Text</option>
                 <option value="2">Number</option>
                 <option value="3">Decimal</option>
@@ -36,24 +33,68 @@
         <div class="form-check mb-2">
             <input class="form-check-input"
                    type="checkbox"
-                   @bind="attribute.IsRequired" />
+               @bind="CategoryAttribute.IsRequired" />
 
             <label class="form-check-label">
                 Required
             </label>
         </div>
 
-        <button class="btn btn-danger"
-                @onclick="() => RemoveAttribute(attribute)">
-            Remove
-        </button>
-    </div>
-}
-
-<button class="btn btn-secondary mb-3"
+        <button class="btn btn-secondary mb-3"
         @onclick="AddAttribute">
     Add Attribute
 </button>
+
+    </div>
+
+
+    </div>
+
+<div class="table-responsive">
+
+    <table class="table table-hover align-middle">
+
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+          
+        @foreach (var item in Model.Attributes)
+            {
+                <tr>
+                    <td>
+                        <strong>@item.Name</strong>
+                    </td>
+
+                    <td>
+                        @item.Type
+                    </td>
+
+                    <td>
+                        @item.IsRequired
+                    </td>
+
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-secondary"
+                                @onclick="() => RemoveAttribute(item)">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
 
 <br />
 
@@ -63,13 +104,6 @@
     Create Category
 </button>
 
-@if (!string.IsNullOrWhiteSpace(SuccessMessage))
-{
-    <div class="alert alert-success mt-3" role="alert">
-        @SuccessMessage
-    </div>
-}
-
 @if (!string.IsNullOrWhiteSpace(ErrorMessage))
 {
     <div class="alert alert-danger mt-3" role="alert">
@@ -78,4 +112,4 @@
 }
 
 
-
+</div>

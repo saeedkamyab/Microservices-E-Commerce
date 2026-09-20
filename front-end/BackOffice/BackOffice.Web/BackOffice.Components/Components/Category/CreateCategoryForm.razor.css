@@ -1,0 +1,8 @@
+﻿.main-container{
+    width:45rem;
+}
+.form-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

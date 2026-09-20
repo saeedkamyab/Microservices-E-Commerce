@@ -1,0 +1,50 @@
+﻿@if (IsVisible)
+{
+    <div class="modal fade show d-block"
+         tabindex="-1"
+         role="dialog">
+
+        <div class="modal-dialog modal-dialog-centered modal-auto-size">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">@Title</h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            aria-label="Close"
+                            @onclick="CloseAsync">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    @ChildContent
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Modal";
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> IsVisibleChanged { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    public async Task CloseAsync()
+    {
+        IsVisible = false;
+
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+}
