@@ -48,7 +48,22 @@ public sealed class Category
             return;
         CategoryName = newName;
     }
+    public void ChangeParentCategory(Guid? newParentCategoryId)
+    {
+        if (newParentCategoryId == Guid.Empty)
+            newParentCategoryId = null;
 
+        if (newParentCategoryId == Id)
+        {
+            throw new InvalidOperationException(
+                "A category cannot be its own parent.");
+        }
+
+        if (ParentCategoryId == newParentCategoryId)
+            return;
+
+        ParentCategoryId = newParentCategoryId;
+    }
     public void Activate()
     {
         if (Status == CategoryStatus.Active)

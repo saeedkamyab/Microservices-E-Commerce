@@ -3,6 +3,7 @@ using Catalog.Domain.Entities;
 using Catalog.Domain.ValueObjects;
 using Catalog.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace Catalog.Infrastructure.Persistence.Repositories;
 
@@ -86,6 +87,73 @@ internal sealed class CategoryRepository : ICategoryRepository
 
     //    return category;
     //}
+
+
+    public async Task<bool> WouldCreateCycleAsync(
+    Guid categoryId,
+    Guid newParentId,
+    CancellationToken cancellationToken)
+    {
+        const string sql = """
+        WITH RECURSIVE ancestors AS
+        (
+            SELECT id, parent_category_id
+            FROM categories
+            WHERE id = @newParentId
+
+            UNION ALL
+
+            SELECT c.id, c.parent_category_id
+            FROM categories c
+            INNER JOIN ancestors a
+                ON c.id = a.parent_category_id
+        )
+        SELECT EXISTS
+        (
+            SELECT 1
+            FROM ancestors
+            WHERE id = @categoryId
+        );
+        """;
+
+        var connection = _dbContext.Database.GetDbConnection();
+
+        var shouldCloseConnection = connection.State != ConnectionState.Open;
+
+        if (shouldCloseConnection)
+            await connection.OpenAsync(cancellationToken);
+
+        try
+        {
+
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = sql;
+
+            var newParentParameter = command.CreateParameter();
+            newParentParameter.ParameterName = "@newParentId";
+            newParentParameter.Value = newParentId;
+            command.Parameters.Add(newParentParameter);
+
+            var categoryParameter = command.CreateParameter();
+            categoryParameter.ParameterName = "@categoryId";
+            categoryParameter.Value = categoryId;
+            command.Parameters.Add(categoryParameter);
+
+            if (connection.State != ConnectionState.Open)
+                await connection.OpenAsync(cancellationToken);
+
+            var result = await command.ExecuteScalarAsync(cancellationToken);
+
+            return result is true;
+        }
+        finally
+        {
+            if (shouldCloseConnection)
+                await connection.CloseAsync();
+        }
+    }
+
     public async Task AddAsync(Category category, CancellationToken cancellationToken)
     {
         await _dbContext.Categories.AddAsync(

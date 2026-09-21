@@ -12,6 +12,13 @@ public interface ICategoryRepository
    Guid id,
    CancellationToken cancellationToken);
 
+
+    Task<bool> WouldCreateCycleAsync(
+    Guid categoryId,
+    Guid newParentId,
+    CancellationToken cancellationToken);
+
+
     Task AddAsync(
       Domain.Entities.Category category,
       CancellationToken cancellationToken);

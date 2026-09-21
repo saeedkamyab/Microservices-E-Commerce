@@ -9,6 +9,7 @@ namespace Catalog.API
             app.MapGetCategoriesEndpoint();
             app.MapGetCategoryByIdEndpoint();
             app.MapCreateCategoryEndpoint();
+            app.MapUpdateCategoryEndpoint();
             app.MapActivateCategoryEndpoint();
             app.MapDeactivateCategoryEndpoint();
         }

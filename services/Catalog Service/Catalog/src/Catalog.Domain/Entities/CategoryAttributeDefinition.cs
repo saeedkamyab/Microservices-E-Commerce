@@ -40,6 +40,23 @@ public sealed class CategoryAttributeDefinition
            type,
            isRequired);
     }
+    public void Rename(Name newName)
+    {
+        ArgumentNullException.ThrowIfNull(newName);
+
+        if (Name == newName)
+            return;
+
+        Name = newName;
+    }
+
+    public void ChangeRequired(bool isRequired)
+    {
+        if (IsRequired == isRequired)
+            return;
+
+        IsRequired = isRequired;
+    }
     public static CategoryAttributeDefinition Rehydrate(
     Guid id,
     Name name,
