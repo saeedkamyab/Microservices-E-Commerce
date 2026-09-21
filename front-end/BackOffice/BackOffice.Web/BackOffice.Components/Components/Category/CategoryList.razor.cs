@@ -1,4 +1,6 @@
 using BackOffice.ApiClient.Catalog.Interfaces;
+using BackOffice.Components.Components.Category.Models;
+using BackOffice.Components.Enums;
 using BackOffice.Contracts.Catalog.Category;
 using Microsoft.AspNetCore.Components;
 
@@ -23,30 +25,47 @@ public partial class CategoryList
 
     private string? ErrorMessage;
 
-    private bool IsCreateModalVisible;
-
     private string? SuccessMessage;
+
+    private bool IsCategoryModalVisible;
+
+    private FormMode CurrentFormMode;
+
+    private CategoryFormModel CategoryFormModel { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-       
         await LoadCategoriesAsync();
     }
-    
+
     private void OpenCreateModal()
     {
-        SuccessMessage = null;
-        IsCreateModalVisible = true;
+        CategoryFormModel = new();
+
+        CurrentFormMode = FormMode.Create;
+
+        IsCategoryModalVisible = true;
+    }
+    private void OpenEditModal(
+     CategoryListItemResponse category)
+    {
+        CategoryFormModel = new()
+        {
+            Id = category.Id,
+            Name = category.Name,
+            ParentCategoryId = category.ParentCategoryId
+        };
+
+        CurrentFormMode = FormMode.Edit;
+
+        IsCategoryModalVisible = true;
     }
 
-    private async Task HandleCategoryCreated()
+    private async Task HandleCategorySaved()
     {
-        IsCreateModalVisible = false;
-
-        PageNumber = 1;
+        IsCategoryModalVisible = false;
 
         await LoadCategoriesAsync();
-
-        SuccessMessage = "Category created successfully.";
     }
 
     private async Task SearchAsync()

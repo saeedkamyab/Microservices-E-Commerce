@@ -1,0 +1,42 @@
+﻿@using BackOffice.Components.Enums;
+<div class="main-container">
+
+
+<div class="mb-3">
+    <label class="form-label">Category Name</label>
+    <input class="form-control" @bind="Model.Name" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Parent Category</label>
+   <input class="form-control" @bind="Model.ParentCategoryId" />
+</div>
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        @ErrorMessage
+    </div>
+}
+
+<hr />
+
+  <div class="d-flex justify-content-end">
+        <button class="btn btn-primary"
+                disabled="@IsSubmitting"
+                @onclick="SaveAsync">
+
+            @if (IsSubmitting)
+            {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+
+            @(Mode == FormMode.Create
+                ? "Create"
+                : "Save Changes")
+
+        </button>
+    </div>
+
+
+</div>

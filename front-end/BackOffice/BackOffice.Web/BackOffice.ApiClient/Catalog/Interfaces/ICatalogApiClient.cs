@@ -16,8 +16,14 @@ public interface ICatalogApiClient
     CancellationToken cancellationToken = default);
 
     Task<ApiResult> CreateCategoryAsync(
-      CreateCategoryRequest request,
+      CreateUpdateCategoryRequest request,
       CancellationToken cancellationToken = default);
+
+
+    Task<ApiResult> UpdateCategoryAsync(
+    Guid categoryId,
+    CreateUpdateCategoryRequest request,
+    CancellationToken cancellationToken = default);
 
     Task<ApiResult> ActivateCategoryAsync(
     Guid categoryId,

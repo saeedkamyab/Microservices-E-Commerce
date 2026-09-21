@@ -1,4 +1,8 @@
 ﻿@using BackOffice.Components.Components.Shared;
+@using BackOffice.Components.Enums;
+
+
+
 
 <div class="card">
     <div class="card-header card-header_Container">
@@ -101,13 +105,19 @@
 
                                 <td class="text-end">
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch" 
-                                                id="@($"status-{category.Id}")"
-                                                checked="@(category.Status == "Active")" 
-                                               @onchange="async e => await ChangeStatusAsync(category,e.Value is bool isActive && isActive)">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               id="@($"status-{category.Id}")"
+                                               checked="@(category.Status == "Active")"
+                                               @onchange="async e => await ChangeStatusAsync(category, e.Value is bool isActive && isActive)">
 
                                         <label class="form-check-label" for="@($"status-{category.Id}")"> @category.Status</label>
 
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-primary"
+                                                @onclick="() => OpenEditModal(category)">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -151,9 +161,14 @@
 </div>
 
 
-<Modal Title="Create Category"
-       @bind-IsVisible="IsCreateModalVisible">
+<Modal Title="@(CurrentFormMode == FormMode.Create
+                   ? "Create Category"
+                   : "Edit Category")"
+       @bind-IsVisible="IsCategoryModalVisible">
 
-    <CreateCategoryForm OnCreated="HandleCategoryCreated" />
+    <CategoryForm
+        Mode="CurrentFormMode"
+        Model="CategoryFormModel"
+        OnSaved="HandleCategorySaved" />
 
 </Modal>

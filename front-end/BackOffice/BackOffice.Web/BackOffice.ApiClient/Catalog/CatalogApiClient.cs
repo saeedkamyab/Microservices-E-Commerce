@@ -81,7 +81,7 @@ internal class CatalogApiClient : ICatalogApiClient
                 "The category response was empty.");
     }
 
-    public async Task<ApiResult> CreateCategoryAsync(CreateCategoryRequest request, 
+    public async Task<ApiResult> CreateCategoryAsync(CreateUpdateCategoryRequest request, 
         CancellationToken cancellationToken = default)
     {
         try
@@ -114,6 +114,44 @@ internal class CatalogApiClient : ICatalogApiClient
                     "Catalog service did not respond in time."));
         }
     }
+
+
+    public async Task<ApiResult> UpdateCategoryAsync(
+    Guid categoryId,
+    CreateUpdateCategoryRequest request,
+    CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync(
+                $"api/catalog/categories/{categoryId}",
+                request,
+                cancellationToken);
+
+            if (response.IsSuccessStatusCode)
+                return ApiResult.Success();
+
+            return await ErrorCreator.CreateErrorResultAsync(
+                response,
+                cancellationToken);
+        }
+        catch (HttpRequestException)
+        {
+            return ApiResult.Failure(
+                new ApiError(
+                    "connection_error",
+                    "Could not connect to Catalog service."));
+        }
+        catch (TaskCanceledException)
+            when (!cancellationToken.IsCancellationRequested)
+        {
+            return ApiResult.Failure(
+                new ApiError(
+                    "timeout",
+                    "Catalog service did not respond in time."));
+        }
+    }
+
 
     public async Task<ApiResult> ActivateCategoryAsync(
       Guid categoryId,
