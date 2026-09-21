@@ -12,15 +12,8 @@ namespace Catalog.UnitTests.Application.Commands.CreateCategory
         {
             var command = new CreateCategoryCommand(
                 "Electronics",
-                null,
-                new List<CategoryAttributeDefinitionInput>
-                {
-                new CategoryAttributeDefinitionInput(
-                    "Color",
-                    AttributeType.Option,
-                    false,
-                    new List<string> { "Red", "Blue" })
-                });
+                null
+                );
 
             var result = _validator.Validate(command);
 
@@ -32,15 +25,7 @@ namespace Catalog.UnitTests.Application.Commands.CreateCategory
         {
             var command = new CreateCategoryCommand(
                 string.Empty,
-                null,
-                new List<CategoryAttributeDefinitionInput>
-                {
-                new CategoryAttributeDefinitionInput(
-                    "Size",
-                    AttributeType.Number,
-                    false,
-                    new List<string>())
-                });
+                null);
 
             var result = _validator.Validate(command);
 
@@ -53,8 +38,8 @@ namespace Catalog.UnitTests.Application.Commands.CreateCategory
         {
             var command = new CreateCategoryCommand(
                 "Books",
-                null,
-                new List<CategoryAttributeDefinitionInput>());
+                null
+               );
 
             var result = _validator.Validate(command);
 
@@ -66,15 +51,8 @@ namespace Catalog.UnitTests.Application.Commands.CreateCategory
         {
             var command = new CreateCategoryCommand(
                 "   ",
-                null,
-                new List<CategoryAttributeDefinitionInput>
-                {
-            new(
-                "Color",
-                AttributeType.Option,
-                false,
-                new List<string> { "Red" })
-                });
+                null
+               );
 
             var result = _validator.Validate(command);
 
@@ -90,8 +68,8 @@ namespace Catalog.UnitTests.Application.Commands.CreateCategory
         {
             var command = new CreateCategoryCommand(
                 "Electronics",
-                null,
-                null!);
+                null
+               );
 
             var result = _validator.Validate(command);
 
@@ -107,15 +85,8 @@ namespace Catalog.UnitTests.Application.Commands.CreateCategory
         {
             var command = new CreateCategoryCommand(
                 "Electronics",
-                null,
-                new List<CategoryAttributeDefinitionInput>
-                {
-            new(
-                string.Empty,
-                AttributeType.Text,
-                false,
-                Array.Empty<string>())
-                });
+                null
+             );
 
             var result = _validator.Validate(command);
 
@@ -131,15 +102,7 @@ namespace Catalog.UnitTests.Application.Commands.CreateCategory
         {
             var command = new CreateCategoryCommand(
                 "Electronics",
-                null,
-                new List<CategoryAttributeDefinitionInput>
-                {
-            new(
-                "Color",
-                AttributeType.Option,
-                false,
-                null!)
-                });
+                null);
 
             var result = _validator.Validate(command);
 

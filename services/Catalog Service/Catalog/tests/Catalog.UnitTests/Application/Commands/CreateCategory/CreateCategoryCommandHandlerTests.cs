@@ -26,8 +26,7 @@ public class CreateCategoryCommandHandlerTests
 
         var command = new CreateCategoryCommand(
             Name: "Any",
-            ParentCategoryId: parentId,
-            Attributes: Array.Empty<CategoryAttributeDefinitionInput>());
+            ParentCategoryId: parentId);
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -56,16 +55,11 @@ public class CreateCategoryCommandHandlerTests
 
         var handler = new CreateCategoryCommandHandler(repoMock.Object, uowMock.Object);
 
-        var attributeInput = new CategoryAttributeDefinitionInput(
-            Name: "Color",
-            Type: AttributeType.Option,
-            IsRequired: true,
-            Options: new[] { "Red", "Green" });
+      
 
         var command = new CreateCategoryCommand(
             Name: "Electronics",
-            ParentCategoryId: null,
-            Attributes: new[] { attributeInput });
+            ParentCategoryId: null);
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);

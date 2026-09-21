@@ -6,13 +6,8 @@ namespace Catalog.Application.Category.Coammands.CreateCategory;
 
 public sealed record CreateCategoryCommand(
     string Name,
-    Guid? ParentCategoryId,
-    IReadOnlyCollection<CategoryAttributeDefinitionInput> Attributes
+    Guid? ParentCategoryId
     ) : IRequest<Guid>;
 
 
-public sealed record CategoryAttributeDefinitionInput(
-    string Name,
-    AttributeType Type,
-    bool IsRequired,
-    IReadOnlyCollection<string>Options);
+
