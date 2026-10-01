@@ -66,6 +66,37 @@ public sealed class Product
         return product;
     }
 
+
+    public void Rename(ProductName newName)
+    {
+        ArgumentNullException.ThrowIfNull(newName);
+
+        if (Name == newName)
+            return;
+
+        Name = newName;
+    }
+
+    public void ChangeDescription(string? description)
+    {
+        if (ProductDescription == description)
+            return;
+
+        ProductDescription = description;
+    }
+
+
+    public void ChangeCategory(Guid categoryId)
+    {
+        if (categoryId == Guid.Empty)
+            throw new ArgumentException("Category is required.");
+
+        if (CategoryId == categoryId)
+            return;
+
+        CategoryId = categoryId;
+    }
+
     public void ChangePrice(Price newPrice)
     {
         ArgumentNullException.ThrowIfNull(newPrice);

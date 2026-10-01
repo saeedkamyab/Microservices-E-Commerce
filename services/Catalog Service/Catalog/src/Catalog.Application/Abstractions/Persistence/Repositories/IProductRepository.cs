@@ -4,11 +4,11 @@ namespace Catalog.Application.Abstractions.Persistence.Repositories;
 
 public interface IProductRepository
 {
-    Task<Product?> GetByIdAsync(
+    Task<Catalog.Domain.Entities.Product?> GetByIdAsync(
        Guid id,
        CancellationToken cancellationToken);
 
     Task AddAsync(
-        Product product,
+        Catalog.Domain.Entities.Product product,
         CancellationToken cancellationToken);
 }

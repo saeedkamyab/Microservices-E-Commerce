@@ -1,10 +1,12 @@
 ﻿using Catalog.Application.Abstractions.Persistence.Repositories.Queries;
-using Catalog.Application.Category.Queries.GetCategories;
+using Catalog.Application.Category.Queries.BackOffice.GetCategories;
+using Catalog.Application.Category.Queries.BackOffice.GetCategoryById;
 using Catalog.Application.Common;
+using Catalog.Application.Common.Enums;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
-using static Catalog.Application.Common.SortEnum;
+using static Catalog.Application.Common.Enums.SortEnum;
 
 namespace Catalog.Infrastructure.Persistence.Repositories.Queries;
 
@@ -17,7 +19,7 @@ internal sealed class CategoryReadService : ICategoryReadService
         _dbContext = dbContext;
     }
 
-    public async Task<PagedResult<CategoryListItem>> GetPagedAsync(
+    public async Task<PagedResult<CategoryListItem>> GetCategoriesAsync(
         string? search,
         CategoryStatusFilter? status,
         CategorySortBy sortBy,
@@ -100,6 +102,32 @@ internal sealed class CategoryReadService : ICategoryReadService
             pageNumber,
             pageSize);
     }
+
+
+
+    public async Task<CategoryDetailsResult?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _dbContext.Categories
+        .AsNoTracking()
+        .Where(x => x.Id == id)
+        .Select(category => new CategoryDetailsResult(
+            category.Id,
+            category.CategoryName.Value,
+            category.ParentCategoryId,
+            category.Status.ToString(),
+            category.AttributeDefinitions
+                .Select(x => new CategoryAttributeResult(
+                    x.Id,
+                    x.Name.Value,
+                    x.Type.ToString(),
+                    x.IsRequired,
+                    x.Options
+                        .Select(o => o.Value)
+                        .ToArray()))
+                .ToArray()))
+        .FirstOrDefaultAsync(cancellationToken);
+    }
+
 
 
 

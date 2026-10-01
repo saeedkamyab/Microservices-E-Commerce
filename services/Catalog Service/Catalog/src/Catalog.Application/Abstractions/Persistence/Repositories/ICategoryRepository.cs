@@ -19,7 +19,19 @@ public interface ICategoryRepository
     CancellationToken cancellationToken);
 
 
+    Task<bool> AttributeDefinitionNameExistsAsync(
+    Guid categoryId,
+    string name,
+    CancellationToken cancellationToken);
+
+
     Task AddAsync(
       Domain.Entities.Category category,
       CancellationToken cancellationToken);
+    Task AddCategoryAttributeDefinitionAsync(
+      Domain.Entities.Category category,
+      CancellationToken cancellationToken);
+
+
+
 }

@@ -24,69 +24,62 @@ internal sealed class CategoryRepository : ICategoryRepository
         return category;
     }
 
-    public Task<Category?> GetWithAttributeDefinitionsAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<Category?> GetWithAttributeDefinitionsAsync(Guid id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var category = await _dbContext.Categories
+            .FirstOrDefaultAsync(
+                x => x.Id == id,
+                cancellationToken);
+
+        if (category is null)
+            return null;
+
+        var definitions = await _dbContext.CategoryAttributeDefinitions
+            .AsNoTracking()
+            .Where(x => x.CategoryId == id)
+            .ToListAsync(cancellationToken);
+
+        if (definitions.Count == 0)
+            return category;
+
+        var definitionIds = definitions
+            .Select(x => x.Id)
+            .ToArray();
+
+        var options = await _dbContext.AttributeOptions
+            .AsNoTracking()
+            .Where(x => definitionIds.Contains(x.AttributeDefinitionId))
+            .ToListAsync(cancellationToken);
+
+        var optionsByDefinitionId = options
+            .GroupBy(x => x.AttributeDefinitionId)
+            .ToDictionary(x => x.Key, x => x.ToList());
+
+        foreach (var definitionRecord in definitions)
+        {
+            var definition = CategoryAttributeDefinition.Rehydrate(
+                definitionRecord.Id,
+                Name.Create(definitionRecord.Name),
+                definitionRecord.Type,
+                definitionRecord.IsRequired);
+
+            if (optionsByDefinitionId.TryGetValue(
+                    definitionRecord.Id,
+                    out var definitionOptions))
+            {
+                foreach (var optionRecord in definitionOptions)
+                {
+                    definition.AddOption(
+                        AttributeOption.Create(optionRecord.Value));
+                }
+            }
+
+            category.AddAttributeDefinition(definition);
+        }
+
+        return category;
     }
 
-    //public async Task<Category?> GetByIdAsync(
-    // Guid id,
-    // CancellationToken cancellationToken)
-    //{
-    //    var category = await _dbContext.Categories
-    //        .AsNoTracking()
-    //        .FirstOrDefaultAsync(
-    //            x => x.Id == id,
-    //            cancellationToken);
-
-    //    if (category is null)
-    //        return null;
-
-    //    var definitions = await _dbContext.CategoryAttributeDefinitions
-    //        .AsNoTracking()
-    //        .Where(x => x.CategoryId == id)
-    //        .ToListAsync(cancellationToken);
-
-    //    if (definitions.Count == 0)
-    //        return category;
-
-    //    var definitionIds = definitions
-    //        .Select(x => x.Id)
-    //        .ToArray();
-
-    //    var options = await _dbContext.AttributeOptions
-    //        .AsNoTracking()
-    //        .Where(x => definitionIds.Contains(x.AttributeDefinitionId))
-    //        .ToListAsync(cancellationToken);
-
-    //    var optionsByDefinitionId = options
-    //        .GroupBy(x => x.AttributeDefinitionId)
-    //        .ToDictionary(x => x.Key, x => x.ToList());
-
-    //    foreach (var definitionRecord in definitions)
-    //    {
-    //        var definition = CategoryAttributeDefinition.Rehydrate(
-    //            definitionRecord.Id,
-    //            Name.Create(definitionRecord.Name),
-    //            definitionRecord.Type,
-    //            definitionRecord.IsRequired);
-
-    //        if (optionsByDefinitionId.TryGetValue(
-    //                definitionRecord.Id,
-    //                out var definitionOptions))
-    //        {
-    //            foreach (var optionRecord in definitionOptions)
-    //            {
-    //                definition.AddOption(
-    //                    AttributeOption.Create(optionRecord.Value));
-    //            }
-    //        }
-
-    //        category.AddAttributeDefinition(definition);
-    //    }
-
-    //    return category;
-    //}
 
 
     public async Task<bool> WouldCreateCycleAsync(
@@ -154,24 +147,42 @@ internal sealed class CategoryRepository : ICategoryRepository
         }
     }
 
+
+    public Task<bool> AttributeDefinitionNameExistsAsync(
+    Guid categoryId,
+    string name,
+    CancellationToken cancellationToken)
+    {
+        return _dbContext.CategoryAttributeDefinitions
+            .AsNoTracking()
+            .AnyAsync(
+                x => x.CategoryId == categoryId &&
+                     x.Name.ToLower() == name.Trim().ToLower(),
+                cancellationToken);
+    }
+
+
     public async Task AddAsync(Category category, CancellationToken cancellationToken)
     {
         await _dbContext.Categories.AddAsync(
            category,
            cancellationToken);
+    }
+    public async Task AddCategoryAttributeDefinitionAsync(Category category, CancellationToken cancellationToken)
+    {
 
         foreach (var definition in category.AttributeDefinitions)
         {
             await _dbContext.CategoryAttributeDefinitions.AddAsync(
-                           new CategoryAttributeDefinitionRecord
-                           {
-                               Id = definition.Id,
-                               CategoryId = category.Id,
-                               Name = definition.Name.Value,
-                               Type = definition.Type,
-                               IsRequired = definition.IsRequired
-                           },
-                           cancellationToken);
+                new CategoryAttributeDefinitionRecord
+                {
+                    Id = definition.Id,
+                    CategoryId = category.Id,
+                    Name = definition.Name.Value,
+                    Type = definition.Type,
+                    IsRequired = definition.IsRequired
+                },
+                cancellationToken);
 
             foreach (var option in definition.Options)
             {
@@ -185,6 +196,9 @@ internal sealed class CategoryRepository : ICategoryRepository
                     cancellationToken);
             }
         }
+
+
+
     }
 
 

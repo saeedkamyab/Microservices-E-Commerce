@@ -24,6 +24,11 @@ public class CatalogDbContext:DbContext, IUnitOfWork
         AttributeOptions =>
             Set<AttributeOptionRecord>();
 
+    public DbSet<Product> Products => Set<Product>();
+
+    internal DbSet<ProductSpecificationRecord> ProductSpecifications =>
+   Set<ProductSpecificationRecord>();
+
 
     protected override void OnModelCreating(
        ModelBuilder modelBuilder)

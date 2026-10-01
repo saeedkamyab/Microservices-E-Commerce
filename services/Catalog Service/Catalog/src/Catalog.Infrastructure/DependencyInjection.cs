@@ -35,6 +35,10 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICategoryReadService, CategoryReadService>();
 
+        services.AddScoped<IProductRepository,  ProductRepository>();
+        services.AddScoped<IProductReadService, ProductReadService>();
+
+
 
         services.AddScoped<IUnitOfWork> (sp =>
             sp.GetRequiredService<CatalogDbContext>());

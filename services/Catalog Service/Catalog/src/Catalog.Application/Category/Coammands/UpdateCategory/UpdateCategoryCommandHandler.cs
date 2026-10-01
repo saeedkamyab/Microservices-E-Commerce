@@ -2,6 +2,7 @@
 using Catalog.Application.Abstractions.Persistence.Repositories;
 using Catalog.Application.Exceptions;
 using Catalog.Domain.Entities;
+using Catalog.Domain.Enums;
 using Catalog.Domain.ValueObjects;
 using MediatR;
 
@@ -28,7 +29,7 @@ public sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategor
             throw new NotFoundException(
                 $"Category with id {request.CategoryId} not found.");
         }
-       
+
         category.Rename(CategoryName.Create(request.Name));
 
         if (category.ParentCategoryId != request.ParentCategoryId)
@@ -43,6 +44,11 @@ public sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategor
                 if (parentCategory is null)
                 {
                     throw new NotFoundException("Parent category was not found.");
+                }
+                if (parentCategory.Status != CategoryStatus.Active)
+                {
+                    throw new InvalidOperationException(
+                        "Cannot create a subcategory for an inactive parent category.");
                 }
 
                 var wouldCreateCycle =

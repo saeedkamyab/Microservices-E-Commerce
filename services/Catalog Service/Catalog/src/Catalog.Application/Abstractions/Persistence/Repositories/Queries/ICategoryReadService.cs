@@ -1,12 +1,14 @@
-﻿using Catalog.Application.Category.Queries.GetCategories;
+﻿using Catalog.Application.Category.Queries.BackOffice.GetCategories;
+using Catalog.Application.Category.Queries.BackOffice.GetCategoryById;
 using Catalog.Application.Common;
-using static Catalog.Application.Common.SortEnum;
+using Catalog.Application.Common.Enums;
+using static Catalog.Application.Common.Enums.SortEnum;
 
 namespace Catalog.Application.Abstractions.Persistence.Repositories.Queries;
 
 public interface ICategoryReadService
 {
-    Task<PagedResult<CategoryListItem>> GetPagedAsync(
+    Task<PagedResult<CategoryListItem>> GetCategoriesAsync(
        string? search,
        CategoryStatusFilter? status,
        CategorySortBy sortBy,
@@ -14,4 +16,9 @@ public interface ICategoryReadService
        int pageNumber,
        int pageSize,
        CancellationToken cancellationToken);
+
+    Task<CategoryDetailsResult?> GetByIdAsync(
+      Guid id,
+      CancellationToken cancellationToken);
+
 }
