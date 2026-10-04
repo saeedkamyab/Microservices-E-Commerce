@@ -202,4 +202,25 @@ internal sealed class CategoryRepository : ICategoryRepository
     }
 
 
+    public async Task SyncRemovedAttributeDefinitionsAsync(
+    Category category,
+    CancellationToken cancellationToken)
+    {
+        var persistedDefinitions =
+            await _dbContext.CategoryAttributeDefinitions
+                .Where(x => x.CategoryId == category.Id)
+                .ToListAsync(cancellationToken);
+
+        var currentDefinitionIds = category.AttributeDefinitions
+            .Select(x => x.Id)
+            .ToHashSet();
+
+        var removedDefinitions = persistedDefinitions
+            .Where(x => !currentDefinitionIds.Contains(x.Id))
+            .ToList();
+
+        _dbContext.CategoryAttributeDefinitions
+            .RemoveRange(removedDefinitions);
+    }
+
 }

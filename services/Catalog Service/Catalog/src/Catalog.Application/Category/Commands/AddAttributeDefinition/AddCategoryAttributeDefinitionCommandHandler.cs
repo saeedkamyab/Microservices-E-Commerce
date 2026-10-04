@@ -7,7 +7,7 @@ using Catalog.Domain.Enums;
 using Catalog.Domain.ValueObjects;
 using MediatR;
 
-namespace Catalog.Application.Category.Coammands.AddAttributeDefinition;
+namespace Catalog.Application.Category.Commands.AddAttributeDefinition;
 
 public sealed class AddCategoryAttributeDefinitionCommandHandler
     : IRequestHandler<AddCategoryAttributeDefinitionCommand, Guid>

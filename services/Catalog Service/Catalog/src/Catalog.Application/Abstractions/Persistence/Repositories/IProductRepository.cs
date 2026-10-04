@@ -8,6 +8,11 @@ public interface IProductRepository
        Guid id,
        CancellationToken cancellationToken);
 
+
+    Task<bool> AnyProductUsesAttributeDefinitionAsync(
+    Guid attributeDefinitionId,
+    CancellationToken cancellationToken);
+
     Task AddAsync(
         Catalog.Domain.Entities.Product product,
         CancellationToken cancellationToken);

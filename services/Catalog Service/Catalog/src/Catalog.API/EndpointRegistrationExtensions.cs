@@ -16,6 +16,7 @@ namespace Catalog.API
             app.MapActivateCategoryEndpoint();
             app.MapDeactivateCategoryEndpoint();
             app.MapAddCategoryAttributeDefinitionEndpoint();
+            app.MapRemoveCategoryAttributeDefinitionEndpoint(); 
 
             //Products
             app.MapGetProductsEndpoint();

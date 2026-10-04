@@ -6,7 +6,7 @@ using Catalog.Domain.Enums;
 using Catalog.Domain.ValueObjects;
 using MediatR;
 
-namespace Catalog.Application.Category.Coammands.CreateCategory;
+namespace Catalog.Application.Category.Commands.CreateCategory;
 
 public sealed class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, Guid>
 {

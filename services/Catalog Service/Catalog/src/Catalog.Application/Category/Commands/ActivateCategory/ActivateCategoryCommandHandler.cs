@@ -3,14 +3,14 @@ using Catalog.Application.Abstractions.Persistence.Repositories;
 using Catalog.Application.Exceptions;
 using MediatR;
 
-namespace Catalog.Application.Category.Coammands.DeactivateCategory;
+namespace Catalog.Application.Category.Commands.ActivateCategory;
 
-public sealed class DeactivateCategoryCommandHandler : IRequestHandler<DeactivateCategoryCommand>
+public sealed class ActivateCategoryCommandHandler : IRequestHandler<ActivateCategoryCommand>
 {
     private readonly ICategoryRepository _categorytRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public DeactivateCategoryCommandHandler(
+    public ActivateCategoryCommandHandler(
         ICategoryRepository categorytRepository,
         IUnitOfWork unitOfWork)
     {
@@ -18,7 +18,7 @@ public sealed class DeactivateCategoryCommandHandler : IRequestHandler<Deactivat
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(DeactivateCategoryCommand request,
+    public async Task Handle(ActivateCategoryCommand request,
         CancellationToken cancellationToken)
     {
         var category = await _categorytRepository.GetByIdAsync(request.CategoryId, cancellationToken);
@@ -28,7 +28,7 @@ public sealed class DeactivateCategoryCommandHandler : IRequestHandler<Deactivat
             throw new NotFoundException(
                 $"Category with ID {request.CategoryId} not found.");
         }
-        category.Deactivate();
+        category.Activate();
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

@@ -6,7 +6,7 @@ using Catalog.Domain.Enums;
 using Catalog.Domain.ValueObjects;
 using MediatR;
 
-namespace Catalog.Application.Category.Coammands.UpdateCategory;
+namespace Catalog.Application.Category.Commands.UpdateCategory;
 
 public sealed class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand>
 {

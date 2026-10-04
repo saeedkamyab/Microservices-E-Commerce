@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Catalog.Application.Category.Coammands.UpdateCategory;
+namespace Catalog.Application.Category.Commands.UpdateCategory;
 
 public class UpdateCategoryCommandValidator:AbstractValidator<UpdateCategoryCommand>
 {

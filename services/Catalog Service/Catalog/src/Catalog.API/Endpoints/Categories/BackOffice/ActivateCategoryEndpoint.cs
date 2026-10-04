@@ -1,4 +1,4 @@
-﻿using Catalog.Application.Category.Coammands.ActivateCategory;
+﻿using Catalog.Application.Category.Commands.ActivateCategory;
 using MediatR;
 
 namespace Catalog.API.Endpoints.Categories.BackOffice;

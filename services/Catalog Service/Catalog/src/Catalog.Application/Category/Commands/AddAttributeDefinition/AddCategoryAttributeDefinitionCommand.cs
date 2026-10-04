@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Catalog.Application.Category.Coammands.AddAttributeDefinition;
+namespace Catalog.Application.Category.Commands.AddAttributeDefinition;
 
 public sealed record AddCategoryAttributeDefinitionCommand(
     Guid CategoryId,

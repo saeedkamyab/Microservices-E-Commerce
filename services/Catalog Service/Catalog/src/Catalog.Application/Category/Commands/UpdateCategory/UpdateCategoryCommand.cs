@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Catalog.Application.Category.Coammands.UpdateCategory;
+namespace Catalog.Application.Category.Commands.UpdateCategory;
 
 public sealed record UpdateCategoryCommand(
     Guid CategoryId,

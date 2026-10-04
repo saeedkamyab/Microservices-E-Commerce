@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Catalog.Application.Category.Coammands.AddAttributeDefinition;
+namespace Catalog.Application.Category.Commands.AddAttributeDefinition;
 
 public class AddCategoryAttributeDefinitionCommandValidator : AbstractValidator<AddCategoryAttributeDefinitionCommand>
 {

@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Catalog.Application.Category.Coammands.CreateCategory;
+namespace Catalog.Application.Category.Commands.CreateCategory;
 
 public class CreateCategoryCommandValidator:AbstractValidator<CreateCategoryCommand>
 {

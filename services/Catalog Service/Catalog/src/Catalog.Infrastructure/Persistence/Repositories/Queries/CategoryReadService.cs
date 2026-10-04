@@ -5,6 +5,7 @@ using Catalog.Application.Common;
 using Catalog.Application.Common.Enums;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Enums;
+using Catalog.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using static Catalog.Application.Common.Enums.SortEnum;
 
@@ -107,25 +108,54 @@ internal sealed class CategoryReadService : ICategoryReadService
 
     public async Task<CategoryDetailsResult?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await _dbContext.Categories
-        .AsNoTracking()
-        .Where(x => x.Id == id)
-        .Select(category => new CategoryDetailsResult(
-            category.Id,
-            category.CategoryName.Value,
-            category.ParentCategoryId,
-            category.Status.ToString(),
-            category.AttributeDefinitions
-                .Select(x => new CategoryAttributeResult(
-                    x.Id,
-                    x.Name.Value,
-                    x.Type.ToString(),
-                    x.IsRequired,
-                    x.Options
-                        .Select(o => o.Value)
-                        .ToArray()))
+
+        var category = await _dbContext.Categories.AsNoTracking()
+            .Where(x => x.Id == id)
+            .Select(x => new
+            {
+                Id = x.Id,
+                Name = x.CategoryName.Value,
+                Status = x.Status,
+                ParentCategoryId = x.ParentCategoryId
+            })
+            .FirstOrDefaultAsync();
+
+        if (category is null)
+            return null;
+
+        var definitions = await _dbContext.CategoryAttributeDefinitions
+       .AsNoTracking()
+       .Where(x => x.CategoryId == id)
+       .ToListAsync(cancellationToken);
+
+        var definitionIds = definitions
+    .Select(x => x.Id)
+    .ToArray();
+
+        var options = await _dbContext.AttributeOptions
+       .AsNoTracking()
+       .Where(x => definitionIds.Contains(x.AttributeDefinitionId))
+       .ToListAsync(cancellationToken);
+
+        var attributes = definitions
+        .Select(definition => new CategoryAttributeResult(
+            definition.Id,
+            definition.Name,
+            definition.Type.ToString(),
+            definition.IsRequired,
+            options
+                .Where(x =>
+                    x.AttributeDefinitionId == definition.Id)
+                .Select(x => x.Value)
                 .ToArray()))
-        .FirstOrDefaultAsync(cancellationToken);
+        .ToArray();
+
+        return new CategoryDetailsResult(
+             category.Id,
+             category.Name,
+             category.ParentCategoryId,
+             category.Status.ToString(),
+             attributes);
     }
 
 

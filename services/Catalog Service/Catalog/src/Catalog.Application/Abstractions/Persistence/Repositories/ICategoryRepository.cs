@@ -32,6 +32,8 @@ public interface ICategoryRepository
       Domain.Entities.Category category,
       CancellationToken cancellationToken);
 
-
+    Task SyncRemovedAttributeDefinitionsAsync(
+Domain.Entities.Category category,
+CancellationToken cancellationToken);
 
 }

@@ -1,4 +1,4 @@
-﻿using Catalog.Application.Category.Coammands.AddAttributeDefinition;
+﻿using Catalog.Application.Category.Commands.AddAttributeDefinition;
 using MediatR;
 
 namespace Catalog.API.Endpoints.Categories.BackOffice;

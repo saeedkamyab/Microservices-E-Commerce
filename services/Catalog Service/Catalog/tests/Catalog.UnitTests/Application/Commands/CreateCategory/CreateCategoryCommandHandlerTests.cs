@@ -1,6 +1,6 @@
 ﻿using Catalog.Application.Abstractions.Persistence;
 using Catalog.Application.Abstractions.Persistence.Repositories;
-using Catalog.Application.Category.Coammands.CreateCategory;
+using Catalog.Application.Category.Commands.CreateCategory;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Enums;
 using Moq;

@@ -21,6 +21,17 @@ internal sealed class ProductRepository : IProductRepository
         return product;
     }
 
+    public Task<bool> AnyProductUsesAttributeDefinitionAsync(
+    Guid attributeDefinitionId,
+    CancellationToken cancellationToken)
+    {
+        return _dbContext.ProductSpecifications
+            .AsNoTracking()
+            .AnyAsync(
+                x => x.AttributeDefinitionId == attributeDefinitionId,
+                cancellationToken);
+    }
+
     //public async Task<Product?> GetWithAttributeDefinitionsAsync(Guid id, CancellationToken cancellationToken)
     //{
     //    var product = await _dbContext.Categories
