@@ -18,7 +18,13 @@ public static class CreateProductEndpoint
                 request.Name,
                 request.ProductDescription,
                 request.CategoryId,
-                request.Price);
+                request.Price,
+                  request.Specifications
+                        .Select(x =>
+                            new ProductSpecificationInput(
+                                x.AttributeDefinitionId,
+                                x.Value))
+                        .ToArray());
             var productId = await sender.Send(command, cancellationToken);
             return Results.Created($"/api/products/{productId}", new { Id = productId });
         });
@@ -30,5 +36,10 @@ public sealed record CreateProductRequest(
     string Name,
     string? ProductDescription,
     Guid CategoryId,
-    decimal Price
+    decimal Price,
+    IReadOnlyCollection<CreateProductSpecificationRequest> Specifications
  );
+
+public sealed record CreateProductSpecificationRequest(
+    Guid AttributeDefinitionId,
+    string Value);

@@ -21,7 +21,13 @@ public static class UpdateProductEndpoint
                 request.Name,
                 request.ProductDescription,
                 request.CategoryId,
-                request.Price);
+                request.Price,
+                  request.Specifications
+                   .Select(x =>
+                            new ProductSpecificationInput(
+                                x.AttributeDefinitionId,
+                                x.Value))
+                        .ToArray());
 
             await sender.Send(command, cancellationToken);
 
@@ -34,11 +40,14 @@ public static class UpdateProductEndpoint
 }
 
 
-public sealed record UpdateProductRequest
-{
-    public string Name { get; set; } = null!;
-    public string? ProductDescription { get; set; }
-    public Guid CategoryId { get; set; }
-    public decimal Price { get; set; }
+public sealed record UpdateProductRequest(
+    string Name,
+    string? ProductDescription,
+    Guid CategoryId,
+    decimal Price,
+    IReadOnlyCollection<UpdateProductSpecificationRequest> Specifications
+ );
 
-}
+public sealed record UpdateProductSpecificationRequest(
+    Guid AttributeDefinitionId,
+    string Value);

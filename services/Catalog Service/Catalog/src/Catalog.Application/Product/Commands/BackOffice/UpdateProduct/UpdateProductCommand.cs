@@ -7,6 +7,9 @@ public sealed record UpdateProductCommand(
     string Name,
     string? ProductDescription,
     Guid CategoryId,
-    decimal Price
-    ) : IRequest;
+    decimal Price,
+    IReadOnlyCollection<ProductSpecificationInput> Specifications) : IRequest;
 
+public sealed record ProductSpecificationInput(
+    Guid AttributeDefinitionId,
+    string Value);
