@@ -8,7 +8,7 @@ namespace Catalog.Application.Abstractions.Persistence.Repositories.Queries;
 
 public interface ICategoryReadService
 {
-    Task<PagedResult<CategoryListItem>> GetCategoriesAsync(
+    Task<PagedResult<ReadModels.CategoryReadModel>> GetCategoriesAsync(
        string? search,
        CategoryStatusFilter? status,
        CategorySortBy sortBy,

@@ -1,4 +1,4 @@
-﻿using Catalog.Application.Category.Queries.BackOffice.GetCategories;
+﻿using Catalog.Application.Category.Queries.StoreFront.GetCategories;
 using MediatR;
 
 namespace Catalog.API.Endpoints.StoreFront.Categories;
@@ -12,7 +12,6 @@ public static class GetCategoriesEndpoint
             "/categories",
             async (
                 string? search,
-                string? status,
                 string? sortBy,
                 string? sortDirection,
                 int? pageNumber,
@@ -22,7 +21,6 @@ public static class GetCategoriesEndpoint
             {
                 var query = new GetCategoriesQuery(
                     Search: search,
-                    Status: status ,
                     SortBy: sortBy ,
                     SortDirection: sortDirection,
                     PageNumber: pageNumber ?? 1,
@@ -37,7 +35,6 @@ public static class GetCategoriesEndpoint
                         .Select(x => new CategoryResponse(
                             Id: x.Id,
                             Name: x.Name,
-                            Status: x.Status,
                             x.ParentCategoryId,
                             x.ParentCategoryName))
                         .ToArray(),
@@ -67,7 +64,6 @@ public static class GetCategoriesEndpoint
     private sealed record CategoryResponse(
         Guid Id,
         string Name,
-        string Status,
         Guid? ParentCategoryId,
         string? ParentCategoryName);
 }

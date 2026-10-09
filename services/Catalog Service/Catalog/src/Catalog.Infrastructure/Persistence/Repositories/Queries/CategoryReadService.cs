@@ -3,6 +3,7 @@ using Catalog.Application.Category.Queries.BackOffice.GetCategories;
 using Catalog.Application.Category.Queries.BackOffice.GetCategoryById;
 using Catalog.Application.Common;
 using Catalog.Application.Common.Enums;
+using Catalog.Application.ReadModels;
 using Catalog.Domain.Entities;
 using Catalog.Domain.Enums;
 using Catalog.Domain.ValueObjects;
@@ -20,7 +21,7 @@ internal sealed class CategoryReadService : ICategoryReadService
         _dbContext = dbContext;
     }
 
-    public async Task<PagedResult<CategoryListItem>> GetCategoriesAsync(
+    public async Task<PagedResult<CategoryReadModel>> GetCategoriesAsync(
         string? search,
         CategoryStatusFilter? status,
         CategorySortBy sortBy,
@@ -81,7 +82,7 @@ internal sealed class CategoryReadService : ICategoryReadService
         var items = await query
       .Skip((pageNumber - 1) * pageSize)
       .Take(pageSize)
-      .Select(x => new CategoryListItem(
+      .Select(x => new CategoryReadModel(
           x.Id,
           x.CategoryName.Value,
           x.Status.ToString(),
@@ -97,7 +98,7 @@ internal sealed class CategoryReadService : ICategoryReadService
                   .FirstOrDefault()))
       .ToListAsync(cancellationToken);
 
-        return new PagedResult<CategoryListItem>(
+        return new PagedResult<CategoryReadModel>(
             items,
             totalCount,
             pageNumber,
