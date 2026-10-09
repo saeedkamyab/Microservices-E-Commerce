@@ -2,26 +2,10 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 export const options = {
-    scenarios: {
-        load_test: {
-            executor: 'ramping-vus',
-
-            stages: [
-                { duration: '20s', target: 100 },
-                { duration: '20s', target: 200 },
-                { duration: '20s', target: 300 },
-                { duration: '20s', target: 400 },
-                { duration: '20s', target: 500 },
-                { duration: '100s', target: 500 },
-            ],
-
-            gracefulRampDown: '10s',
-        },
-    },
-
+    vus: 500,
+    duration: '160s',
     insecureSkipTLSVerify: true,
 };
-
 
 export default function () {
 

@@ -29,7 +29,7 @@ services:
 
     environment:
         ASPNETCORE_ENVIRONMENT: Development
-        ConnectionStrings__CatalogDatabaseConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+        ConnectionStrings__CatalogDatabaseConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Maximum Pool Size=15"
         OpenTelemetry__OtlpEndpoint: "http://otel-collector:4317"
         
     ports:

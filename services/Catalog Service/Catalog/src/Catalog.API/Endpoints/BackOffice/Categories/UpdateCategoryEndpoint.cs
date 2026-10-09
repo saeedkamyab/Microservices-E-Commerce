@@ -1,7 +1,7 @@
 ﻿using Catalog.Application.Category.Commands.UpdateCategory;
 using MediatR;
 
-namespace Catalog.API.Endpoints.Categories.BackOffice;
+namespace Catalog.API.Endpoints.BackOffice.Categories;
 
 public static class UpdateCategoryEndpoint
 {
@@ -9,7 +9,7 @@ public static class UpdateCategoryEndpoint
     public static IEndpointRouteBuilder MapUpdateCategoryEndpoint(
        this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPut("/api/categories/{id:guid}", async (
+        endpoints.MapPut("/categories/{id:guid}", async (
             Guid id,
             UpdateCategoryRequest request,
             ISender sender,

@@ -1,7 +1,7 @@
 ﻿using Catalog.Application.Category.Commands.RemoveAttributeDefinition;
 using MediatR;
 
-namespace Catalog.API.Endpoints.Categories.BackOffice
+namespace Catalog.API.Endpoints.BackOffice.Categories
 {
     public static class RemoveCategoryAttributeDefinitionEndpoint
     {
@@ -9,7 +9,7 @@ namespace Catalog.API.Endpoints.Categories.BackOffice
             this IEndpointRouteBuilder endpoints)
         {
             endpoints.MapDelete(
-                "/api/categories/{categoryId:guid}/attributes/{attributeId:guid}",
+                "/categories/{categoryId:guid}/attributes/{attributeId:guid}",
                 async (Guid categoryId, Guid attributeId, ISender sender,
                     CancellationToken cancellationToken) =>
                 {

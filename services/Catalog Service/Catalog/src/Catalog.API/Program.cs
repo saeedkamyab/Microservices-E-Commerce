@@ -1,4 +1,5 @@
-using Catalog.API;
+using Catalog.API.Endpoints.BackOffice;
+using Catalog.API.Endpoints.StoreFront;
 using Catalog.API.Exceptions;
 using Catalog.Application;
 using Catalog.Infrastructure;
@@ -49,6 +50,7 @@ builder.Services
          metrics
              .AddAspNetCoreInstrumentation()
              .AddHttpClientInstrumentation()
+             .AddMeter("System.Runtime")
              .AddOtlpExporter(options =>
              {
                  options.Endpoint =
@@ -68,7 +70,9 @@ app.UseHttpsRedirection();
 
 app.UseSerilogRequestLogging();
 
-app.MapCatalogEndpoints();
+
+app.MapStoreFrontEndpoints();
+app.MapBackOfficeEndpoints();
 
 app.UseExceptionHandler();
 

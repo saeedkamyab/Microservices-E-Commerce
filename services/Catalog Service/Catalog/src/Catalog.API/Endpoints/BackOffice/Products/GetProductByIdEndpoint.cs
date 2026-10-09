@@ -1,7 +1,7 @@
 ﻿using Catalog.Application.Product.Queries.BackOffice.GetProductById;
 using MediatR;
 
-namespace Catalog.API.Endpoints.Products.BackOffice;
+namespace Catalog.API.Endpoints.BackOffice.Products;
 
 public static class GetProductByIdEndpoint
 {
@@ -10,7 +10,7 @@ public static class GetProductByIdEndpoint
     {
 
         endpoints.MapGet(
-     "/api/products/{id:guid}",
+     "/products/{id:guid}",
      async (
          Guid id,
          ISender sender,

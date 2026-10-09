@@ -30,8 +30,10 @@ services:
       - observability
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.2.2
     container_name: ecommerce-grafana
+    environment:
+       GF_PLUGINS_PREINSTALL_DISABLED: "true"
     ports:
       - "3000:3000"
     volumes:
@@ -55,7 +57,7 @@ services:
     depends_on:
         - otel-collector
     networks:
-            - observability
+      - observability
 
 networks:
   observability:

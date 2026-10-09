@@ -1,7 +1,7 @@
 ﻿using Catalog.Application.Product.Coammands.BackOffice.UpdateProduct;
 using MediatR;
 
-namespace Catalog.API.Endpoints.Categories.BackOffice;
+namespace Catalog.API.Endpoints.BackOffice.Products;
 
 public static class UpdateProductEndpoint
 {
@@ -9,7 +9,7 @@ public static class UpdateProductEndpoint
     public static IEndpointRouteBuilder MapUpdateProductEndpoint(
        this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPut("/api/products/{id:guid}", async (
+        endpoints.MapPut("/products/{id:guid}", async (
             Guid id,
             UpdateProductRequest request,
             ISender sender,

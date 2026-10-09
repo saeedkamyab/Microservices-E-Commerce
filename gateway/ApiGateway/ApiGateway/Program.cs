@@ -44,6 +44,7 @@ builder.Services.AddOpenTelemetry()
            metrics
                .AddAspNetCoreInstrumentation()
                .AddHttpClientInstrumentation()
+               .AddMeter("System.Runtime")
                .AddOtlpExporter(options =>
                {
                    options.Endpoint =

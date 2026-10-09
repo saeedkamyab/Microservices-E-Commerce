@@ -1,14 +1,14 @@
 ﻿using Catalog.Application.Product.Coammands.BackOffice.CreateProduct;
 using MediatR;
 
-namespace Catalog.API.Endpoints.Categories.BackOffice;
+namespace Catalog.API.Endpoints.BackOffice.Products;
 
 public static class CreateProductEndpoint
 {
     public static IEndpointRouteBuilder MapCreateProductEndpoint(
         this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("/api/products", async (
+        endpoints.MapPost("/products", async (
             CreateProductRequest request,
             ISender sender,
             CancellationToken cancellationToken) =>
@@ -26,7 +26,7 @@ public static class CreateProductEndpoint
                                 x.Value))
                         .ToArray());
             var productId = await sender.Send(command, cancellationToken);
-            return Results.Created($"/api/products/{productId}", new { Id = productId });
+            return Results.Created($"/products/{productId}", new { Id = productId });
         });
 
         return endpoints;

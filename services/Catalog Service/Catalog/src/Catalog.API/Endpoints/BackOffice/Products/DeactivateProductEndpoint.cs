@@ -1,14 +1,14 @@
 ﻿using Catalog.Application.Product.Coammands.BackOffice.DeactivateProduct;
 using MediatR;
 
-namespace Catalog.API.Endpoints.Categories.BackOffice;
+namespace Catalog.API.Endpoints.BackOffice.Products;
 
 public static class DeactivateProductEndpoint
 {
     public static IEndpointRouteBuilder MapDeactivateProductEndpoint(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapPost(
-            "/api/products/{id:guid}/deactivate", async (
+            "/products/{id:guid}/deactivate", async (
             Guid id, ISender sender,
             CancellationToken cancellationToken) =>
             {

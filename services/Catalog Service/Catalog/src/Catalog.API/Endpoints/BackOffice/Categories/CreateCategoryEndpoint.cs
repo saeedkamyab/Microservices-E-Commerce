@@ -1,14 +1,14 @@
 ﻿using Catalog.Application.Category.Commands.CreateCategory;
 using MediatR;
 
-namespace Catalog.API.Endpoints.Categories.BackOffice;
+namespace Catalog.API.Endpoints.BackOffice.Categories;
 
 public static class CreateCategoryEndpoint
 {
     public static IEndpointRouteBuilder MapCreateCategoryEndpoint(
         this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("/api/categories",async(
+        endpoints.MapPost("/categories",async(
             CreateCategoryRequest request,
             ISender sender,
             CancellationToken cancellationToken) =>
@@ -18,7 +18,7 @@ public static class CreateCategoryEndpoint
                 request.Name,
                 request.ParentCategoryId);
             var categoryId=await sender.Send(command,cancellationToken);
-            return Results.Created($"/api/categories/{categoryId}", new { Id = categoryId });
+            return Results.Created($"/categories/{categoryId}", new { Id = categoryId });
         });
 
         return endpoints;

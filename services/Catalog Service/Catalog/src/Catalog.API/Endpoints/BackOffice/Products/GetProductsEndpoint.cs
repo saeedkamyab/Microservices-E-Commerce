@@ -1,15 +1,15 @@
-﻿using Catalog.Application.Category.Queries.BackOffice.GetCategories;
+﻿using Catalog.Application.Product.Queries.BackOffice.GetProducts;
 using MediatR;
 
-namespace Catalog.API.Endpoints.Categories.BackOffice;
+namespace Catalog.API.Endpoints.BackOffice.Products;
 
-public static class GetCategoriesEndpoint
+public static class GetProductsEndpoint
 {
-    public static IEndpointRouteBuilder MapGetCategoriesEndpoint(
+    public static IEndpointRouteBuilder MapGetProductsEndpoint(
        this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet(
-            "/api/categories",
+            "/products",
             async (
                 string? search,
                 string? status,
@@ -20,10 +20,10 @@ public static class GetCategoriesEndpoint
                 ISender sender,
                 CancellationToken cancellationToken) =>
             {
-                var query = new GetCategoriesQuery(
+                var query = new GetProductsQuery(
                     Search: search,
-                    Status: status ,
-                    SortBy: sortBy ,
+                    Status: status,
+                    SortBy: sortBy,
                     SortDirection: sortDirection,
                     PageNumber: pageNumber ?? 1,
                     PageSize: pageSize ?? 20);
@@ -32,14 +32,16 @@ public static class GetCategoriesEndpoint
                     query,
                     cancellationToken);
 
-                var response = new GetCategoriesResponse(
+                var response = new GetProductsResponse(
                     Items: result.Items
-                        .Select(x => new CategoryResponse(
+                        .Select(x => new ProductResponse(
                             Id: x.Id,
                             Name: x.Name,
+                            ProductDescription: x.ProductDescription,
+                            CategoryId: x.CategoryId,
                             Status: x.Status,
-                            x.ParentCategoryId,
-                            x.ParentCategoryName))
+                            Price: x.Price,
+                            CategoryName: x.CategoryName))
                         .ToArray(),
 
                     TotalCount: result.TotalCount,
@@ -55,8 +57,8 @@ public static class GetCategoriesEndpoint
         return endpoints;
     }
 
-    private sealed record GetCategoriesResponse(
-       IReadOnlyCollection<CategoryResponse> Items,
+    private sealed record GetProductsResponse(
+       IReadOnlyCollection<ProductResponse> Items,
        int TotalCount,
        int PageNumber,
        int PageSize,
@@ -64,11 +66,13 @@ public static class GetCategoriesEndpoint
        bool HasPreviousPage,
        bool HasNextPage);
 
-    private sealed record CategoryResponse(
+    private sealed record ProductResponse(
         Guid Id,
         string Name,
+        string? ProductDescription,
+        Guid CategoryId,
         string Status,
-        Guid? ParentCategoryId,
-        string? ParentCategoryName);
+        decimal Price,
+        string CategoryName);
 }
 

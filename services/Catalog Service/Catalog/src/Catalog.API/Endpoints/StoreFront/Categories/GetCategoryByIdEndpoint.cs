@@ -1,7 +1,7 @@
 ﻿using Catalog.Application.Category.Queries.BackOffice.GetCategoryById;
 using MediatR;
 
-namespace Catalog.API.Endpoints.Categories.BackOffice;
+namespace Catalog.API.Endpoints.StoreFront.Categories;
 
 public static class GetCategoryByIdEndpoint
 {
@@ -10,7 +10,7 @@ public static class GetCategoryByIdEndpoint
     {
 
         endpoints.MapGet(
-     "/api/categories/{id:guid}",
+     "/categories/{id:guid}",
      async (
          Guid id,
          ISender sender,

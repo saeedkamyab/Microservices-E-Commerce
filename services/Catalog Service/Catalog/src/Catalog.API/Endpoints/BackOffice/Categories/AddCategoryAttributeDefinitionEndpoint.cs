@@ -1,14 +1,14 @@
 ﻿using Catalog.Application.Category.Commands.AddAttributeDefinition;
 using MediatR;
 
-namespace Catalog.API.Endpoints.Categories.BackOffice;
+namespace Catalog.API.Endpoints.BackOffice.Categories;
 
 public static class AddCategoryAttributeDefinitionEndpoint
 {
     public static IEndpointRouteBuilder MapAddCategoryAttributeDefinitionEndpoint(
     this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPut("/api/categories/{id:guid}/attribute-definitions", async (
+        endpoints.MapPut("/categories/{id:guid}/attribute-definitions", async (
             Guid id,
       AddCategoryAttributeDefinitionRequest request,
       ISender sender,
@@ -23,7 +23,7 @@ public static class AddCategoryAttributeDefinitionEndpoint
                Options: request.Options);
             var attributeId = await sender.Send(command, cancellationToken);
 
-            return Results.Created($"/api/categories/{id}/attribute-definitions/{attributeId}", new { Id = attributeId });
+            return Results.Created($"/categories/{id}/attribute-definitions/{attributeId}", new { Id = attributeId });
            
         });
 
