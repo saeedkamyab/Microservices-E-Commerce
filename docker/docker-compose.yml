@@ -1,5 +1,22 @@
 services:
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+        - "6379:6379"
+    volumes:
+        - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+    environment:
+        ConnectionStrings__Redis: "redis:6379"
+
   postgres:
     image: postgres:18
     container_name: ecommerce-postgres
@@ -30,6 +47,7 @@ services:
     environment:
         ASPNETCORE_ENVIRONMENT: Development
         ConnectionStrings__CatalogDatabaseConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Maximum Pool Size=15"
+        ConnectionStrings__Redis: "redis"
         OpenTelemetry__OtlpEndpoint: "http://otel-collector:4317"
         
     ports:
@@ -37,6 +55,8 @@ services:
 
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
     healthcheck:
@@ -97,6 +117,7 @@ services:
       - observability
 
 volumes:
+  redis-data:
   postgres-data:
   backoffice-dataprotection:
   

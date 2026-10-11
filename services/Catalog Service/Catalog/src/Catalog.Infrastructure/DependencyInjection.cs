@@ -1,12 +1,15 @@
-﻿using Catalog.Application.Abstractions.Persistence;
+﻿using Catalog.Application.Abstractions.Caching;
+using Catalog.Application.Abstractions.Persistence;
 using Catalog.Application.Abstractions.Persistence.Repositories;
 using Catalog.Application.Abstractions.Persistence.Repositories.Queries;
+using Catalog.Infrastructure.Caching;
 using Catalog.Infrastructure.Persistence;
 using Catalog.Infrastructure.Persistence.Repositories;
 using Catalog.Infrastructure.Persistence.Repositories.Queries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace Catalog.Infrastructure;
 
@@ -43,7 +46,24 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork> (sp =>
             sp.GetRequiredService<CatalogDbContext>());
 
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration =
+                configuration.GetConnectionString("Redis");
 
+            options.InstanceName = "catalog:";
+        });
+
+
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+    ConnectionMultiplexer.Connect(
+        configuration.GetConnectionString("Redis")
+        ?? throw new InvalidOperationException(
+            "Redis connection string is missing.")));
+
+
+        services.AddSingleton<ICacheService, RedisCacheService>();
+        services.AddSingleton<ICacheVersionService, RedisCacheVersionService>();
 
         return services;
     }

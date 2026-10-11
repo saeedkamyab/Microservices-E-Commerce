@@ -1,5 +1,7 @@
-﻿using Catalog.Application.Abstractions.Persistence;
+﻿using Catalog.Application.Abstractions.Caching;
+using Catalog.Application.Abstractions.Persistence;
 using Catalog.Application.Abstractions.Persistence.Repositories;
+using Catalog.Application.Common.Caching;
 using Catalog.Application.Exceptions;
 using MediatR;
 
@@ -8,13 +10,16 @@ namespace Catalog.Application.Category.Commands.DeactivateCategory;
 public sealed class DeactivateCategoryCommandHandler : IRequestHandler<DeactivateCategoryCommand>
 {
     private readonly ICategoryRepository _categorytRepository;
+    private readonly ICacheVersionService _cacheVersionService;
     private readonly IUnitOfWork _unitOfWork;
 
     public DeactivateCategoryCommandHandler(
         ICategoryRepository categorytRepository,
+        ICacheVersionService cacheVersionService,
         IUnitOfWork unitOfWork)
     {
         _categorytRepository = categorytRepository;
+        _cacheVersionService = cacheVersionService;
         _unitOfWork = unitOfWork;
     }
 
@@ -30,5 +35,9 @@ public sealed class DeactivateCategoryCommandHandler : IRequestHandler<Deactivat
         }
         category.Deactivate();
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _cacheVersionService.IncrementVersionAsync(
+    CatalogCacheKeys.StoreFrontCategoriesVersion,
+    cancellationToken);
     }
 }

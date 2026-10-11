@@ -12,7 +12,8 @@ export const options = {
                 { duration: '20s', target: 300 },
                 { duration: '20s', target: 400 },
                 { duration: '20s', target: 500 },
-                { duration: '100s', target: 500 },
+                { duration: '100s', target: 1000 },
+
             ],
 
             gracefulRampDown: '10s',
@@ -36,7 +37,7 @@ export default function () {
 
     // Send POST request
     const response = http.post(
-        'http://localhost:5000/api/catalog/categories',
+        'http://localhost:5000/api/catalog/backoffice/categories',
         payload,
         {
             headers: {
