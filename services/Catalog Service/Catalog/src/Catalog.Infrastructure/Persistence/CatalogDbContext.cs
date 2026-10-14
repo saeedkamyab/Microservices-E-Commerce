@@ -1,6 +1,7 @@
 ﻿using Catalog.Application.Abstractions.Persistence;
 using Catalog.Domain.Entities;
 using Catalog.Infrastructure.Persistence.Models;
+using Catalog.Infrastructure.Persistence.Outbox;
 using Microsoft.EntityFrameworkCore;
 
 namespace Catalog.Infrastructure.Persistence;
@@ -29,6 +30,8 @@ public class CatalogDbContext:DbContext, IUnitOfWork
     internal DbSet<ProductSpecificationRecord> ProductSpecifications =>
    Set<ProductSpecificationRecord>();
 
+    internal DbSet<OutboxMessage> OutboxMessages =>
+    Set<OutboxMessage>();
 
     protected override void OnModelCreating(
        ModelBuilder modelBuilder)

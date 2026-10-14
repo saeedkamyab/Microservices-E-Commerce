@@ -4,7 +4,7 @@ using MediatR;
 namespace Catalog.Application.Behaviors;
 
 public sealed class CacheInvalidationBehavior<TRequest, TResponse>(
-    ICacheVersionService versionService)
+      ICacheInvalidationContext invalidationContext)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
@@ -13,18 +13,20 @@ public sealed class CacheInvalidationBehavior<TRequest, TResponse>(
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
-        var response = await next(cancellationToken);
+        if (request is not IInvalidatesCache invalidation)
+            return await next(cancellationToken);
 
-        if (request is IInvalidatesCache invalidation)
+        invalidationContext.AddKeys(
+            invalidation.CacheVersionKeys);
+
+        try
         {
-            foreach (var key in invalidation.CacheVersionKeys.Distinct())
-            {
-                await versionService.IncrementVersionAsync(
-                    key,
-                    cancellationToken);
-            }
+            return await next(cancellationToken);
         }
-
-        return response;
+        finally
+        {
+            invalidationContext.Clear();
+        }
     }
 }
+
