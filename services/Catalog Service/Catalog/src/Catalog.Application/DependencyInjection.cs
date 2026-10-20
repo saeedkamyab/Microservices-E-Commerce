@@ -17,8 +17,7 @@ public static class DependencyInjection
                 typeof(DependencyInjection).Assembly);
 
             config.AddOpenBehavior(typeof(ValidationBehavior<,>));
-            config.AddOpenBehavior(typeof(CachingBehavior<,>));
-            config.AddOpenBehavior(typeof(CacheInvalidationBehavior<,>));
+
         });
 
 

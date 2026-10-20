@@ -1,16 +1,11 @@
-﻿using Catalog.Application.Abstractions.Caching;
-using Catalog.Application.Common.Caching;
-using Catalog.Domain.Enums;
-using MediatR;
-using System.Net;
+﻿using MediatR;
 
 namespace Catalog.Application.Category.Commands.CreateCategory;
 
 public sealed record CreateCategoryCommand(
     string Name,
     Guid? ParentCategoryId
-    ) : IRequest<Guid>, IInvalidatesCache
+    ) : IRequest<Guid>
 {
-    public IReadOnlyCollection<string> CacheVersionKeys =>
-         [CatalogCacheKeys.StoreFrontCategoriesVersion];
+   
 }

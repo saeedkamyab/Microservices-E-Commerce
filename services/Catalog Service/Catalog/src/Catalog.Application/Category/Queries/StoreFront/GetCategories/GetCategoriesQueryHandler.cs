@@ -1,7 +1,6 @@
-﻿using Catalog.Application.Abstractions.Caching;
+﻿
 using Catalog.Application.Abstractions.Persistence.Repositories.Queries;
 using Catalog.Application.Common;
-using Catalog.Application.Common.Caching;
 using Catalog.Application.Common.Enums;
 using MediatR;
 using static Catalog.Application.Common.Enums.SortEnum;
@@ -17,9 +16,7 @@ public sealed class GetCategoriesQueryHandler
 
 
     public GetCategoriesQueryHandler(
-        ICategoryReadService categoryReadService,
-        ICacheVersionService cacheVersionService,
-        ICacheService cacheService)
+        ICategoryReadService categoryReadService)
     {
         _categoryReadService = categoryReadService;
        

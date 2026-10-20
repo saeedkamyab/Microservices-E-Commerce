@@ -1,7 +1,5 @@
-﻿using Catalog.Application.Abstractions.Caching;
-using Catalog.Application.Abstractions.Persistence;
+﻿using Catalog.Application.Abstractions.Persistence;
 using Catalog.Application.Abstractions.Persistence.Repositories;
-using Catalog.Application.Common.Caching;
 using Catalog.Application.Exceptions;
 using MediatR;
 
@@ -14,7 +12,6 @@ public sealed class DeactivateCategoryCommandHandler : IRequestHandler<Deactivat
 
     public DeactivateCategoryCommandHandler(
         ICategoryRepository categorytRepository,
-        ICacheVersionService cacheVersionService,
         IUnitOfWork unitOfWork)
     {
         _categorytRepository = categorytRepository;

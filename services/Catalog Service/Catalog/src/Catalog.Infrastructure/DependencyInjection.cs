@@ -1,11 +1,7 @@
-﻿using Catalog.Application.Abstractions.Caching;
-using Catalog.Application.Abstractions.Persistence;
+﻿using Catalog.Application.Abstractions.Persistence;
 using Catalog.Application.Abstractions.Persistence.Repositories;
 using Catalog.Application.Abstractions.Persistence.Repositories.Queries;
-using Catalog.Infrastructure.Caching;
 using Catalog.Infrastructure.Persistence;
-using Catalog.Infrastructure.Persistence.Interceptors;
-using Catalog.Infrastructure.Persistence.Outbox;
 using Catalog.Infrastructure.Persistence.Repositories;
 using Catalog.Infrastructure.Persistence.Repositories.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -37,8 +33,8 @@ public static class DependencyInjection
         {
             options.UseNpgsql(connectionString);
 
-            options.AddInterceptors(
-                sp.GetRequiredService<CacheInvalidationOutboxInterceptor>());
+            //options.AddInterceptors(
+            //    sp.GetRequiredService<CacheInvalidationOutboxInterceptor>());
         });
 
 
@@ -78,13 +74,7 @@ public static class DependencyInjection
             return ConnectionMultiplexer.Connect(options);
         });
 
-        services.AddSingleton<ICacheService, RedisCacheService>();
-        services.AddSingleton<ICacheVersionService, RedisCacheVersionService>();
-        services.AddScoped<ICacheInvalidationContext, CacheInvalidationContext>();
-        services.AddScoped<CacheInvalidationOutboxInterceptor>();
-        services.AddHostedService<OutboxProcessor>();
-
-
+       
 
         return services;
     }
