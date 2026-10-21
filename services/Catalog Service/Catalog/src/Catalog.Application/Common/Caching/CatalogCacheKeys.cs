@@ -2,6 +2,6 @@
 
 public static class CatalogCacheKeys
 {
-    public const string StoreFrontCategoriesVersion =
-        "catalog:storefront:categories:version";
+    public const string backOfficeProductsVersion =
+        "catalog:backoffice:products:version";
 }
