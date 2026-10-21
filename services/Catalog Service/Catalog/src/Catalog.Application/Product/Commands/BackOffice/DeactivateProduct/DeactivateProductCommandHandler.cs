@@ -11,15 +11,13 @@ public sealed class DeactivateProductCommandHandler : IRequestHandler<Deactivate
 {
     private readonly IProductRepository _producttRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ICacheVersionService _cacheVersionService;
+   
     public DeactivateProductCommandHandler(
         IProductRepository producttRepository,
-        IUnitOfWork unitOfWork,
-        ICacheVersionService cacheVersionService)
+        IUnitOfWork unitOfWork)
     {
         _producttRepository = producttRepository;
         _unitOfWork = unitOfWork;
-        _cacheVersionService = cacheVersionService;
     }
 
     public async Task Handle(DeactivateProductCommand request,
@@ -34,10 +32,5 @@ public sealed class DeactivateProductCommandHandler : IRequestHandler<Deactivate
         }
         product.Deactivate();
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        await _cacheVersionService.IncrementVersionAsync(
-         CatalogCacheKeys.backOfficeProductsVersion,
-         cancellationToken);
-
     }
 }
