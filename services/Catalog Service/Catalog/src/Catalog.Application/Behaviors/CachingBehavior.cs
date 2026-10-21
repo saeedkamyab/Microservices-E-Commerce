@@ -1,11 +1,14 @@
 ﻿using Catalog.Application.Abstractions.Caching;
 using MediatR;
+using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace Catalog.Application.Behaviors;
 
 public sealed class CachingBehavior<TRequest, TResponse>(
     ICacheService cacheService,
-    ICacheVersionService versionService)
+    ICacheVersionService versionService,
+    ILogger<CachingBehavior<TRequest, TResponse>> logger)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
@@ -17,34 +20,74 @@ public sealed class CachingBehavior<TRequest, TResponse>(
         if (request is not ICacheableQuery cacheable)
             return await next(cancellationToken);
 
-        var version = await versionService.GetVersionAsync(
-            cacheable.CacheVersionKey,
-            cancellationToken);
+        long version;
+        TResponse? cached;
 
-        var key = $"{cacheable.CacheKey}:v{version}";
+        try
+        {
+            version = await versionService.GetVersionAsync(
+                cacheable.CacheVersionKey,
+                cancellationToken);
 
-        var cached = await cacheService.GetAsync<TResponse>(
-            key,
-            cancellationToken);
+            var cacheKey = $"{cacheable.CacheKey}:v{version}";
 
-        if (cached is not null)
-            return cached;
+            cached = await cacheService.GetAsync<TResponse>(
+                cacheKey,
+                cancellationToken);
 
+            if (cached is not null)
+                return cached;
+        }
+        catch (Exception ex) when (IsCacheFailure(ex, cancellationToken))
+        {
+            logger.LogWarning(
+                ex,
+                "Cache read failed for {RequestType}. Bypassing cache.",
+                typeof(TRequest).Name);
+
+            return await next(cancellationToken);
+        }
+
+        // Execute Handler outside the cache exception handler.
         var response = await next(cancellationToken);
 
-        var latestVersion = await versionService.GetVersionAsync(
-            cacheable.CacheVersionKey,
-            cancellationToken);
-
-        if (latestVersion == version)
+        try
         {
-            await cacheService.SetAsync(
-                key,
-                response,
-                cacheable.CacheExpiration,
+            var latestVersion = await versionService.GetVersionAsync(
+                cacheable.CacheVersionKey,
                 cancellationToken);
+
+            if (latestVersion == version)
+            {
+                var cacheKey = $"{cacheable.CacheKey}:v{version}";
+
+                await cacheService.SetAsync(
+                    cacheKey,
+                    response,
+                    cacheable.CacheExpiration,
+                    cancellationToken);
+            }
+        }
+        catch (Exception ex) when (IsCacheFailure(ex, cancellationToken))
+        {
+            logger.LogWarning(
+                ex,
+                "Cache write failed for {RequestType}. Returning database result.",
+                typeof(TRequest).Name);
         }
 
         return response;
+    }
+
+    private static bool IsCacheFailure(
+        Exception exception,
+        CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+            return false;
+
+        return exception is RedisException
+            or TimeoutException
+            or System.IO.IOException;
     }
 }
