@@ -1,6 +1,8 @@
-﻿using Catalog.Application.Abstractions.Persistence;
+﻿using Catalog.Application.Abstractions.Caching;
+using Catalog.Application.Abstractions.Persistence;
 using Catalog.Application.Abstractions.Persistence.Repositories;
 using Catalog.Application.Abstractions.Persistence.Repositories.Queries;
+using Catalog.Infrastructure.Caching;
 using Catalog.Infrastructure.Persistence;
 using Catalog.Infrastructure.Persistence.Repositories;
 using Catalog.Infrastructure.Persistence.Repositories.Queries;
@@ -74,7 +76,7 @@ public static class DependencyInjection
             return ConnectionMultiplexer.Connect(options);
         });
 
-       
+        services.AddSingleton<ICacheService, RedisCacheService>();
 
         return services;
     }

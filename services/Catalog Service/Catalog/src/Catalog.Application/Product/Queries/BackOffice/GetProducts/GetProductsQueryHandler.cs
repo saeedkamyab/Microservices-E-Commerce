@@ -1,4 +1,5 @@
-﻿using Catalog.Application.Abstractions.Persistence.Repositories.Queries;
+﻿using Catalog.Application.Abstractions.Caching;
+using Catalog.Application.Abstractions.Persistence.Repositories.Queries;
 using Catalog.Application.Common;
 using Catalog.Application.Common.Enums;
 using MediatR;
@@ -11,25 +12,84 @@ public sealed class GetProductsQueryHandler
         GetProductsQuery,
         PagedResult<ProductListItem>>
 {
-    private readonly IProductReadService _categoryReadService;
+    private readonly IProductReadService _productReadService;
+    private readonly ICacheService _cacheService;
+    private static readonly TimeSpan CacheExpiration =
+       TimeSpan.FromMinutes(5);
 
     public GetProductsQueryHandler(
-        IProductReadService categoryReadService)
+        IProductReadService productReadService,
+        ICacheService cacheService)
     {
-        _categoryReadService = categoryReadService;
+        _productReadService = productReadService;
+        _cacheService = cacheService;
     }
 
-    public Task<PagedResult<ProductListItem>> Handle(
+    public async Task<PagedResult<ProductListItem>> Handle(
         GetProductsQuery request,
         CancellationToken cancellationToken)
     {
-        return _categoryReadService.GetProductsAsync(
+        var status = StringToEnumConvertor
+            .ToNullableEnum<ProductStatusFilter>(request.Status);
+
+
+        var sortBy = StringToEnumConvertor
+            .ToEnum<ProductSortBy>(request.SortBy);
+
+        var sortDirection = StringToEnumConvertor
+            .ToEnum<SortDirection>(request.SortDirection);
+        
+        var cacheKey = CreateCacheKey(
+           request, status, sortBy, sortDirection);
+
+        var cachedResult = await _cacheService
+            .GetAsync<PagedResult<ProductListItem>>(
+                cacheKey,
+                cancellationToken);
+
+        if (cachedResult is not null)
+            return cachedResult;
+
+        var result =await _productReadService.GetProductsAsync(
             request.Search,
-            StringToEnumConvertor.ToNullableEnum<ProductStatusFilter>(request.Status),
-            StringToEnumConvertor.ToEnum<ProductSortBy>(request.SortBy),
-            StringToEnumConvertor.ToEnum<SortDirection>(request.SortDirection),
+            status,
+            sortBy,
+            sortDirection,
             request.PageNumber,
             request.PageSize,
             cancellationToken);
+
+        await _cacheService.SetAsync(
+          cacheKey,
+          result,
+          CacheExpiration,
+          cancellationToken);
+
+        return result;
     }
+
+    private static string CreateCacheKey(
+       GetProductsQuery request,
+       ProductStatusFilter? status,
+       ProductSortBy sortBy,
+       SortDirection sortDirection)
+    {
+        var search = request.Search?.Trim().ToLowerInvariant()
+            ?? string.Empty;
+
+     
+        var encodedSearch = Convert.ToHexString(
+            System.Text.Encoding.UTF8.GetBytes(search));
+
+        return
+            $"backoffice:products:list:" +
+            $"search={encodedSearch}:" +
+            $"status={status}:" +
+            $"sort={sortBy}:" +
+            $"direction={sortDirection}:" +
+            $"page={request.PageNumber}:" +
+            $"size={request.PageSize}";
+    }
+
+
 }

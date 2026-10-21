@@ -149,6 +149,10 @@ internal sealed class ProductReadService : IProductReadService
     {
         return status switch
         {
+            ProductStatusFilter.Draft =>
+                query.Where(x =>
+                    x.Status == ProductStatus.Draft),
+
             ProductStatusFilter.Active =>
                 query.Where(x =>
                     x.Status == ProductStatus.Active),
@@ -160,7 +164,7 @@ internal sealed class ProductReadService : IProductReadService
             _ => throw new ArgumentOutOfRangeException(
                 nameof(status),
                 status,
-                "Unsupported category status filter.")
+                "Unsupported product status filter.")
         };
     }
 
