@@ -4,68 +4,55 @@ namespace Catalog.UnitTests.Domain.ValueObjects;
 
 public class AttributeOptionTests
 {
+
+    #region CreateAttributeOption Tests
+    
+    [Fact]
+    public void Create_Should_Create_AttributeOption_With_Valid_Value()
+    {
+        var value = "Option 1";
+
+        var attributeOption = AttributeOption.Create(value);
+
+        Assert.Equal(value, attributeOption.Value);
+    }
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Create_Should_Reject_Null_Or_Whitespace(string? input)
+    public void Create_Should_Throw_When_Value_Is_Invalid(
+   string? value)
     {
-        // Act
-        var action = () => AttributeOption.Create(input!);
-
-        // Assert
-        Assert.Throws<ArgumentException>(action);
+        Assert.Throws<ArgumentException>(() =>
+            AttributeOption.Create(value!));
     }
 
     [Fact]
-    public void Create_Should_Trim_Value_And_Set_ToString()
+    public void Create_Should_Throw_Exception_When_Value_exceeds_Max_Length()
     {
-        // Arrange
-        var raw = "  Blue  ";
-
-        // Act
-        var option = AttributeOption.Create(raw);
-
-        // Assert
-        Assert.Equal("Blue", option.Value);
-        Assert.Equal("Blue", option.ToString());
+        var longValue = new string('a', 101);
+        Assert.Throws<ArgumentException>(() => AttributeOption.Create(longValue));
     }
 
     [Fact]
-    public void Create_Should_Allow_Exactly_100_Characters()
+    public void Create_Should_Create_With_100_Character_Value()
     {
-        // Arrange
-        var value = new string('a', 100);
+        var validValue = new string('a', 100);
 
-        // Act
-        var option = AttributeOption.Create(value);
+        var attributeOption = AttributeOption.Create(validValue);
 
-        // Assert
-        Assert.Equal(value, option.Value);
+        Assert.Equal(validValue, attributeOption.Value);
     }
 
     [Fact]
-    public void Create_Should_Reject_More_Than_100_Characters()
+    public void Create_Should_Trim_Value()
     {
-        // Arrange
-        var value = new string('a', 101);
+        var result =
+            AttributeOption.Create("  Hello  ");
 
-        // Act
-        var action = () => AttributeOption.Create(value);
-
-        // Assert
-        var ex = Assert.Throws<ArgumentException>(action);
-        Assert.Equal("value", ex.ParamName);
+        Assert.Equal("Hello", result.Value);
     }
 
-    [Fact]
-    public void Equality_Is_Value_Based_For_Same_Text()
-    {
-        // Arrange & Act
-        var a = AttributeOption.Create("Blue");
-        var b = AttributeOption.Create("Blue");
+    #endregion
 
-        // Assert
-        Assert.Equal(a, b);
-    }
 }

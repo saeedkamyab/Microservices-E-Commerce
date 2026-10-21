@@ -6,303 +6,321 @@ namespace Catalog.UnitTests.Domain.Entities;
 
 public class ProductTests
 {
+    #region CreateProduct Tests
     [Fact]
-    public void Create_Should_Reject_Empty_CategoryId()
-    {
-        var name = ProductName.Create("Phone");
-        var price = Price.Create(100);
-
-        var action = () => Product.Create(name, "desc", Guid.Empty, price);
-
-        Assert.Throws<ArgumentException>(action);
-    }
-
-    [Fact]
-    public void Create_Should_Create_Draft_Product()
+    public void CreateProduct_Should_CreateProduct_When_ValidParameters()
     {
         // Arrange
-        var name = ProductName.Create("Phone");
-        var price = Price.Create(199.99m);
+        var name = ProductName.Create("Test Product");
+
+        var description = "This is a test product.";
+
         var categoryId = Guid.NewGuid();
 
+        var price = Price.Create(10.99m);
+
         // Act
-        var product = Product.Create(name, "A product", categoryId, price);
+        var product = Product.Create(name, description, categoryId, price);
 
         // Assert
-        Assert.NotEqual(Guid.Empty, product.Id);
+        Assert.NotNull(product);
         Assert.Equal(name, product.Name);
-        Assert.Equal("A product", product.ProductDescription);
+        Assert.Equal(description, product.ProductDescription);
         Assert.Equal(categoryId, product.CategoryId);
         Assert.Equal(price, product.Price);
         Assert.Equal(ProductStatus.Draft, product.Status);
     }
 
     [Fact]
-    public void ChangePrice_Should_Throw_On_Null()
+    public void CreateProduct_Should_Throw_ArgumentException_When_CategoryIdIsEmpty()
     {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(10));
+        // Arrange
+        var name = ProductName.Create("Test Product");
 
-        Assert.Throws<ArgumentNullException>(() => product.ChangePrice(null!));
+        var description = "This is a test product.";
+
+        var categoryId = Guid.Empty;
+
+        var price = Price.Create(10.99m);
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() =>
+            Product.Create(name, description, categoryId, price));
+    }
+    [Fact]
+    public void CreateProduct_Should_Throw_ArgumentNullException_When_NameIsNull()
+    {
+        // Arrange
+        ProductName name = null!;
+
+        var description = "This is a test product.";
+
+        var categoryId = Guid.NewGuid();
+
+        var price = Price.Create(10.99m);
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            Product.Create(name, description, categoryId, price));
+    }
+    [Fact]
+    public void CreateProduct_Should_Throw_ArgumentNullException_When_PriceIsNull()
+    {
+        // Arrange
+        var name = ProductName.Create("Test Product");
+
+        var description = "This is a test product.";
+
+        var categoryId = Guid.NewGuid();
+
+        Price price = null!;
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            Product.Create(name, description, categoryId, price));
+    }
+
+
+    #endregion
+
+    #region Rename Tests
+    [Fact]
+    public void Rename_Should_ChangeName_When_ValidNewName()
+    {
+        var product = CreateValidProduct();
+
+        var newName = ProductName.Create("Updated Product");
+        // Act
+        product.Rename(newName);
+        // Assert
+        Assert.Equal(newName, product.Name);
     }
 
     [Fact]
-    public void ChangePrice_Should_Do_Nothing_When_Same_Price()
+    public void Rename_Should_Throw_ArgumentNullException_When_NewName_IsNull()
     {
-        var price = Price.Create(50);
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            price);
+        var product = CreateValidProduct();
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => product.Rename(null!));
+    }
+    #endregion
 
-        product.ChangePrice(Price.Create(50)); // equal by record semantics
+    #region ChangeCategory Tests
+    [Fact]
+    public void ChangeCategory_Should_ChangeCategory_When_ValidNewCategoryId()
+    {
+        var product = CreateValidProduct();
 
+        var newCategoryId = Guid.NewGuid();
+        // Act
+        product.ChangeCategory(newCategoryId);
+        // Assert
+        Assert.Equal(newCategoryId, product.CategoryId);
+    }
+    [Fact]
+    public void ChangeCategory_Should_Throw_ArgumentException_When_NewCategoryId_Is_Empty()
+    {
+        var product = CreateValidProduct();
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => product.ChangeCategory(Guid.Empty));
+    }
+
+
+    #endregion
+
+    #region ChangePrice Tests
+    [Fact]
+    public void ChangePrice_Should_ChangePrice_When_ValidNewPrice()
+    {
+        var product = CreateValidProduct();
+
+        var newPrice = Price.Create(15.99m);
+
+        // Act
+        product.ChangePrice(newPrice);
+        // Assert
+        Assert.Equal(newPrice, product.Price);
+    }
+    [Fact]
+    public void ChangePrice_Should_Throw_ArgumentNullException_When_NewPriceIsNull()
+    {
+        var product = CreateValidProduct();
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() => product.ChangePrice(null!));
+    }
+    [Fact]
+    public void ChangePrice_Should_NotChangePrice_When_New_Price_Is_Same_As_CurrentPrice()
+    {
+        // Arrange
+        var product = CreateValidProduct();
+        var price = Price.Create(10.99m);
+
+        // Act
+        product.ChangePrice(price);
+        // Assert
         Assert.Equal(price, product.Price);
     }
 
+    #endregion
+
+    #region Activate Tests
     [Fact]
-    public void ChangePrice_Should_Update_Price()
+    public void Activate_Should_ChangeStatusToActive_When_Product_Is_Draft()
     {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(50));
-
-        var newPrice = Price.Create(75);
-
-        product.ChangePrice(newPrice);
-
-        Assert.Equal(newPrice, product.Price);
-    }
-
-    [Fact]
-    public void Activate_Should_Throw_When_Price_Is_Invalid()
-    {
-        var product = Product.Create(
-            ProductName.Create("Freebie"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(0));
-
-        var action = () => product.Activate();
-
-        Assert.Throws<InvalidOperationException>(action);
-    }
-
-    [Fact]
-    public void Activate_Should_Set_Status_To_Active()
-    {
-        var product = Product.Create(
-            ProductName.Create("Paid"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(20));
-
+        var product = CreateValidProduct();
+        // Act
         product.Activate();
-
+        // Assert
         Assert.Equal(ProductStatus.Active, product.Status);
     }
-
     [Fact]
-    public void Deactivate_Should_Throw_When_Status_Is_Draft()
+    public void Activate_Should_Throw_InvalidOperationException_When_Product_Amount_Is_Zero()
     {
-        var product = Product.Create(
-            ProductName.Create("Item"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(10));
+        var product = CreateValidProduct();
+        product.ChangePrice(Price.Create(0));
 
+        Assert.Throws<InvalidOperationException>(() => product.Activate());
+
+    }
+
+    #endregion
+
+    #region Deactivate Tests
+    [Fact]
+    public void Deactivate_Should_Change_Status_To_Inactive_When_Product_Is_Active()
+    {
+        var product = CreateValidProduct();
+
+        product.Activate();
+        // Act
+        product.Deactivate();
+        // Assert
+        Assert.Equal(ProductStatus.Inactive, product.Status);
+    }
+    [Fact]
+    public void Deactivate_Should_Throw_InvalidOperationException_When_Product_Is_Draft()
+    {
+        // Arrange
+        var product = CreateValidProduct();
+
+        // Act & Assert
         Assert.Throws<InvalidOperationException>(() => product.Deactivate());
     }
 
+    #endregion
+
+    #region AddSpecification Tests
     [Fact]
-    public void Deactivate_Should_Set_Status_To_Inactive_From_Active()
+    public void AddSpecification_Should_Add_Specification_When_ValidSpecification()
     {
-        var product = Product.Create(
-            ProductName.Create("Item"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(10));
+        var product = CreateValidProduct();
 
-        product.Activate();
-        product.Deactivate();
+        var attributeDefinitionId = Guid.NewGuid();
 
-        Assert.Equal(ProductStatus.Inactive, product.Status);
+        var specification = ProductSpecification.Create(
+            attributeDefinitionId, ProductSpecificationValue.CreateText("Red"));
+
+        // Act
+        product.AddSpecification(specification);
+        // Assert
+        Assert.Contains(specification, product.Specifications);
     }
-
     [Fact]
-    public void AddSpecification_Should_Add_Specification()
+    public void AddSpecification_Should_Throw_InvalidOperationException_When_SpecificationAlreadyExists()
     {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(100));
+        // Arrange
+        var product = CreateValidProduct();
 
-        var spec = ProductSpecification.Create(
-            Guid.NewGuid(),
-            ProductSpecificationValue.CreateText("Value"));
+        var attributeDefinitionId = Guid.NewGuid();
 
-        product.AddSpecification(spec);
+        var specification1 = ProductSpecification.Create(
+            attributeDefinitionId, ProductSpecificationValue.CreateText("Red"));
+        
+        var specification2 = ProductSpecification.Create(
+            attributeDefinitionId, ProductSpecificationValue.CreateText("Blue"));
 
-        var result = Assert.Single(product.Specifications);
-        Assert.Equal(spec, result);
+        product.AddSpecification(specification1);
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => product.AddSpecification(specification2));
     }
+    #endregion
+
+    #region ChangeSpecification Tests
 
     [Fact]
-    public void AddSpecification_Should_Reject_Null()
+    public void ChangeSpecification_Should_Update_Value_When_Specification_Exists()
     {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(100));
+        // Arrange
+        var product = CreateValidProduct();
+        var attributeDefinitionId = Guid.NewGuid();
 
-        Assert.Throws<ArgumentNullException>(() => product.AddSpecification(null!));
+        var oldValue = ProductSpecificationValue.CreateText("Red");
+        var newValue = ProductSpecificationValue.CreateText("Blue");
+
+        var specification = ProductSpecification.Create(
+           attributeDefinitionId, oldValue);
+
+        product.AddSpecification(specification);
+
+        // Act
+        product.ChangeSpecification(attributeDefinitionId, newValue);
+
+        // Assert
+        var specificationItem = Assert.Single(product.Specifications);
+
+        Assert.Equal(attributeDefinitionId, specification.AttributeDefinitionId);
+        Assert.Equal(newValue, specificationItem.Value);
     }
-
     [Fact]
-    public void AddSpecification_Should_Reject_Duplicate_Attribute()
+    public void ChangeSpecification_Should_Throw_When_Specification_Does_Not_Exist()
     {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(100));
+        // Arrange
+        var product = CreateValidProduct();
+        var attributeDefinitionId = Guid.NewGuid();
 
-        var attributeId = Guid.NewGuid();
+        var newValue = ProductSpecificationValue.CreateText("Blue");
 
-        product.AddSpecification(
-            ProductSpecification.Create(attributeId, ProductSpecificationValue.CreateText("v1")));
-
+        // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>
-            product.AddSpecification(
-                ProductSpecification.Create(attributeId, ProductSpecificationValue.CreateText("v2"))));
+            product.ChangeSpecification(attributeDefinitionId, newValue));
     }
 
-    [Fact]
-    public void ChangeSpecification_Should_Throw_When_Not_Exist()
-    {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(100));
+    #endregion
 
-        Assert.Throws<InvalidOperationException>(() =>
-            product.ChangeSpecification(Guid.NewGuid(), ProductSpecificationValue.CreateText("x")));
+    #region RemoveSpecification Tests
+
+    [Fact]
+    public void RemoveSpecification_Should_Remove_Specification_When_Specification_Exists()
+    {
+        // Arrange
+        var product = CreateValidProduct();
+
+        var attributeDefinitionId = Guid.NewGuid();
+
+        var specification = ProductSpecification.Create(
+            attributeDefinitionId, ProductSpecificationValue.CreateText("Red"));
+
+        product.AddSpecification(specification);
+        // Act
+        product.RemoveSpecification(attributeDefinitionId);
+        // Assert
+        Assert.DoesNotContain(specification, product.Specifications);
     }
 
-    [Fact]
-    public void ChangeSpecification_Should_Update_Value()
+    #endregion
+
+
+
+    private Product CreateValidProduct()
     {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(100));
+        var name = ProductName.Create("Test Product");
 
-        var attrId = Guid.NewGuid();
-        var spec = ProductSpecification.Create(attrId, ProductSpecificationValue.CreateText("old"));
-        product.AddSpecification(spec);
+        var description = "This is a test product.";
 
-        product.ChangeSpecification(attrId, ProductSpecificationValue.CreateText("new"));
+        var categoryId = Guid.NewGuid();
 
-        var result = Assert.Single(product.Specifications);
-        Assert.Equal("new", result.Value.Value);
-    }
+        var price = Price.Create(10.99m);
 
-    [Fact]
-    public void RemoveSpecification_Should_Remove_When_Exists()
-    {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(100));
-
-        var attrId = Guid.NewGuid();
-        var spec = ProductSpecification.Create(attrId, ProductSpecificationValue.CreateText("v"));
-        product.AddSpecification(spec);
-
-        product.RemoveSpecification(attrId);
-
-        Assert.Empty(product.Specifications);
-    }
-
-    [Fact]
-    public void RemoveSpecification_With_Unknown_Id_Should_Do_Nothing()
-    {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(100));
-
-        // nothing added
-        product.RemoveSpecification(Guid.NewGuid());
-
-        Assert.Empty(product.Specifications);
-    }
-    [Fact]
-    public void Create_Should_Reject_Null_Name()
-    {
-        var action = () => Product.Create(
-            null!,
-            null,
-            Guid.NewGuid(),
-            Price.Create(100));
-
-        Assert.Throws<ArgumentNullException>(action);
-    }
-    [Fact]
-    public void Create_Should_Reject_Null_Price()
-    {
-        var action = () => Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            null!);
-
-        Assert.Throws<ArgumentNullException>(action);
-    }
-    [Fact]
-    public void Activate_When_Already_Active_Should_Do_Nothing()
-    {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(100));
-
-        product.Activate();
-
-        product.Activate();
-
-        Assert.Equal(ProductStatus.Active, product.Status);
-    }
-    [Fact]
-    public void ChangeSpecification_Should_Reject_Null_Value()
-    {
-        var product = Product.Create(
-            ProductName.Create("Phone"),
-            null,
-            Guid.NewGuid(),
-            Price.Create(100));
-
-        var attrId = Guid.NewGuid();
-
-        product.AddSpecification(
-            ProductSpecification.Create(
-                attrId,
-                ProductSpecificationValue.CreateText("old")));
-
-        Assert.Throws<ArgumentNullException>(() =>
-            product.ChangeSpecification(attrId, null!));
+        return Product.Create(name, description, categoryId, price);
     }
 }

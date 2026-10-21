@@ -5,69 +5,149 @@ namespace Catalog.UnitTests.Domain.Entities;
 
 public class ProductSpecificationTests
 {
+    #region Create Tests
     [Fact]
-    public void Create_Should_Reject_Empty_AttributeDefinitionId()
-    {
-        // Arrange
-        var value = ProductSpecificationValue.CreateText("Example");
-
-        // Act
-        var action = () => ProductSpecification.Create(Guid.Empty, value);
-
-        // Assert
-        Assert.Throws<ArgumentException>(action);
-    }
-
-    [Fact]
-    public void Create_Should_Reject_Null_Value()
-    {
-        // Act
-        var action = () => ProductSpecification.Create(Guid.NewGuid(), null!);
-
-        // Assert
-        Assert.Throws<ArgumentNullException>(action);
-    }
-
-    [Fact]
-    public void Create_Should_Create_ProductSpecification()
+    public void Create_ShouldReturnProductSpecification_When_ValidParameters()
     {
         // Arrange
         var attributeDefinitionId = Guid.NewGuid();
-        var value = ProductSpecificationValue.CreateText("Example");
-
+        var value = ProductSpecificationValue.CreateText("Test Value");
+       
         // Act
-        var spec = ProductSpecification.Create(attributeDefinitionId, value);
-
+        var specification = ProductSpecification.Create(attributeDefinitionId, value);
+       
         // Assert
-        Assert.NotEqual(Guid.Empty, spec.Id);
-        Assert.Equal(attributeDefinitionId, spec.AttributeDefinitionId);
-        Assert.Equal(value, spec.Value);
+        Assert.NotNull(specification);
+        Assert.Equal(attributeDefinitionId, specification.AttributeDefinitionId);
+        Assert.Equal(value, specification.Value);
     }
 
     [Fact]
-    public void ChangeValue_Should_Change_Value()
+    public void Create_ShouldThrowArgumentException_When_AttributeDefinitionId_Is_Empty()
     {
         // Arrange
-        var spec = ProductSpecification.Create(Guid.NewGuid(), ProductSpecificationValue.CreateText("Old"));
-        var newValue = ProductSpecificationValue.CreateText("New");
+        var attributeDefinitionId = Guid.Empty;
 
-        // Act
-        spec.ChangeValue(newValue);
+        var value = ProductSpecificationValue.CreateText("Test Value");
 
-        // Assert
-        Assert.Equal(newValue, spec.Value);
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => ProductSpecification.Create(attributeDefinitionId, value));
+     
     }
 
     [Fact]
-    public void ChangeValue_Should_Reject_Null_Value()
+    public void Create_Should_Throw_ArgumentNullException_When_Value_Is_Null()
     {
         // Arrange
-        var spec = ProductSpecification.Create(Guid.NewGuid(), ProductSpecificationValue.CreateText("Old"));
+        var attributeDefinitionId = Guid.NewGuid();
+      
+        ProductSpecificationValue value = null!;
+      
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentNullException>(() => ProductSpecification.Create(attributeDefinitionId, value));
+
+    }
+
+    #endregion
+
+    #region ChangeValue Tests
+    [Fact]
+    public void ChangeValue_Should_Update_Value_When_ValidValue()
+    {
+        // Arrange
+        var attributeDefinitionId = Guid.NewGuid();
+
+        var initialValue = ProductSpecificationValue.CreateText("Initial Value");
+
+        var specification = ProductSpecification.Create(attributeDefinitionId, initialValue);
+
+        var newValue = ProductSpecificationValue.CreateText("New Value");
 
         // Act
-        var action = () => spec.ChangeValue(null!);
-
+        specification.ChangeValue(newValue);
         // Assert
-        Assert.Throws<ArgumentNullException>(action);
+        Assert.Equal(newValue, specification.Value);
     }
+
+    [Fact]
+    public void ChangeValue_Should_Throw_ArgumentNullException_When_Value_Is_Null()
+    {
+        // Arrange
+        var attributeDefinitionId = Guid.NewGuid();
+
+        var initialValue = ProductSpecificationValue.CreateText("Initial Value");
+
+        var specification = ProductSpecification.Create(attributeDefinitionId, initialValue);
+
+        ProductSpecificationValue newValue = null!;
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentNullException>(() => specification.ChangeValue(newValue));
+    }
+
+    #endregion
+
+    #region Rehydrate Tests
+
+    [Fact]
+    public void Rehydrate_Should_Return_ProductSpecification_When_ValidParameters()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+
+        var attributeDefinitionId = Guid.NewGuid();
+
+        var value = ProductSpecificationValue.CreateText("Test Value");
+        // Act
+        var specification = ProductSpecification.Rehydrate(id, attributeDefinitionId, value);
+        // Assert
+        Assert.NotNull(specification);
+        Assert.Equal(id, specification.Id);
+        Assert.Equal(attributeDefinitionId, specification.AttributeDefinitionId);
+        Assert.Equal(value, specification.Value);
+    }
+
+    [Fact]
+    public void Rehydrate_Should_Throw_ArgumentException_When_Id_Is_Empty()
+    {
+        // Arrange
+        var id = Guid.Empty;
+
+        var attributeDefinitionId = Guid.NewGuid();
+
+        var value = ProductSpecificationValue.CreateText("Test Value");
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => ProductSpecification.Rehydrate(id, attributeDefinitionId, value));
+    }
+
+    [Fact]
+    public void Rehydrate_Should_Throw_ArgumentException_When_AttributeDefinitionId_Is_Empty()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+
+        var attributeDefinitionId = Guid.Empty;
+
+        var value = ProductSpecificationValue.CreateText("Test Value");
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => ProductSpecification.Rehydrate(id, attributeDefinitionId, value));
+    }
+
+    [Fact]
+    public void Rehydrate_Should_Throw_ArgumentNullException_When_Value_Is_Null()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+
+        var attributeDefinitionId = Guid.NewGuid();
+
+        ProductSpecificationValue value = null!;
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentNullException>(() => ProductSpecification.Rehydrate(id, attributeDefinitionId, value));
+    }
+
+    #endregion
+
 }
