@@ -2,6 +2,7 @@ using Catalog.API.Endpoints.BackOffice;
 using Catalog.API.Endpoints.StoreFront;
 using Catalog.API.Exceptions;
 using Catalog.Application;
+using Catalog.Application.Abstractions.Caching;
 using Catalog.Infrastructure;
 using Catalog.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
