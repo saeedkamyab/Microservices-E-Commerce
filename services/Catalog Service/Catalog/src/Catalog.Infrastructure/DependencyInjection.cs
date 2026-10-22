@@ -5,6 +5,7 @@ using Catalog.Application.Abstractions.Persistence.Repositories.Queries;
 using Catalog.Infrastructure.Caching;
 using Catalog.Infrastructure.Persistence;
 using Catalog.Infrastructure.Persistence.Interceptors;
+using Catalog.Infrastructure.Persistence.Outbox;
 using Catalog.Infrastructure.Persistence.Repositories;
 using Catalog.Infrastructure.Persistence.Repositories.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -81,6 +82,7 @@ public static class DependencyInjection
         services.AddSingleton<ICacheVersionService, RedisCacheVersionService>();
         services.AddScoped<ICacheInvalidationContext,CacheInvalidationContext>();
         services.AddScoped<CacheInvalidationOutboxInterceptor>();
+        services.AddHostedService<OutboxProcessor>();
 
         return services;
     }
