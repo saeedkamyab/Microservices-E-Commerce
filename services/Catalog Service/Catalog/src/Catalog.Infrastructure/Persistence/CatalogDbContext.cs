@@ -13,8 +13,6 @@ public class CatalogDbContext:DbContext, IUnitOfWork
         : base(options)
     {
     }
-
-    //public DbSet<Product> Products => Set<Product>();
     public DbSet<Category> Categories => Set<Category>();
 
     internal DbSet<CategoryAttributeDefinitionRecord>
