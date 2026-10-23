@@ -41,8 +41,9 @@ public sealed class OutboxProcessor(
         }
     }
 
+
     private async Task ProcessMessagesAsync(
-        CancellationToken cancellationToken)
+    CancellationToken cancellationToken)
     {
         using var scope = scopeFactory.CreateScope();
 
@@ -52,16 +53,35 @@ public sealed class OutboxProcessor(
         var versionService = scope.ServiceProvider
             .GetRequiredService<ICacheVersionService>();
 
-        var messages = await dbContext.OutboxMessages
-            .Where(x =>
-                x.ProcessedAtUtc == null &&
-                x.Type == "CacheInvalidation")
-            .OrderBy(x => x.CreatedAtUtc)
-            .Take(20)
-            .ToListAsync(cancellationToken);
+        // Each message is processed in its own transaction.
+        // SKIP LOCKED prevents multiple workers from
+        // processing the same message concurrently.
 
-        foreach (var message in messages)
+        for (var i = 0; i < 20; i++)
         {
+            await using var transaction =
+                await dbContext.Database.BeginTransactionAsync(
+                    cancellationToken);
+
+            var message = await dbContext.OutboxMessages
+                .FromSqlRaw("""
+                SELECT *
+                FROM "OutboxMessages"
+                WHERE "ProcessedAtUtc" IS NULL
+                  AND "Type" = 'CacheInvalidation'
+                ORDER BY "CreatedAtUtc", "Id"
+                LIMIT 1
+                FOR UPDATE SKIP LOCKED
+                """)
+                .AsTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (message is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                break;
+            }
+
             try
             {
                 using var document =
@@ -72,17 +92,21 @@ public sealed class OutboxProcessor(
                     .GetString();
 
                 if (string.IsNullOrWhiteSpace(key))
+                {
                     throw new InvalidOperationException(
                         "CacheVersionKey is missing.");
+                }
 
                 await versionService.IncrementVersionAsync(
-                    key, cancellationToken);
+                    key,
+                    cancellationToken);
 
                 message.ProcessedAtUtc = DateTime.UtcNow;
                 message.LastError = null;
 
-                await dbContext.SaveChangesAsync(
-                    cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
 
                 logger.LogInformation(
                     "Outbox message {MessageId} processed.",
@@ -95,6 +119,12 @@ public sealed class OutboxProcessor(
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync(
+                    cancellationToken);
+
+                // Discard tracked state after rollback.
+                dbContext.ChangeTracker.Clear();
+
                 message.RetryCount++;
                 message.LastError = ex.Message.Length > 2000
                     ? ex.Message[..2000]
@@ -102,6 +132,18 @@ public sealed class OutboxProcessor(
 
                 try
                 {
+                    // Persist failure information separately.
+                    // The message remains available for retry.
+                    dbContext.OutboxMessages.Attach(message);
+
+                    dbContext.Entry(message)
+                        .Property(x => x.RetryCount)
+                        .IsModified = true;
+
+                    dbContext.Entry(message)
+                        .Property(x => x.LastError)
+                        .IsModified = true;
+
                     await dbContext.SaveChangesAsync(
                         cancellationToken);
                 }
@@ -110,13 +152,21 @@ public sealed class OutboxProcessor(
                     logger.LogError(
                         saveException,
                         "Failed to persist outbox error.");
+
+                    dbContext.ChangeTracker.Clear();
                 }
 
                 logger.LogWarning(
                     ex,
                     "Outbox message {MessageId} failed.",
                     message.Id);
+
+                // Avoid immediately retrying the same failed
+                // message repeatedly in this processing cycle.
+                break;
             }
         }
     }
+
+
 }
