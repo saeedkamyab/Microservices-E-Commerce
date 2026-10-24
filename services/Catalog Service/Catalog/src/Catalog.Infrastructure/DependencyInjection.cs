@@ -59,6 +59,17 @@ public static class DependencyInjection
                 configuration.GetConnectionString("Redis");
 
             options.InstanceName = "catalog:";
+
+            options.ConfigurationOptions = new ConfigurationOptions
+            {
+                AbortOnConnectFail = false,
+                ConnectRetry = 2,
+                ConnectTimeout = 2000,
+                AsyncTimeout = 2000,
+                SyncTimeout = 2000,
+                KeepAlive = 30
+            };
+
         });
 
 
@@ -73,7 +84,12 @@ public static class DependencyInjection
 
             options.AbortOnConnectFail = false;
             options.ConnectRetry = 2;
-            options.ConnectTimeout = 3000;
+            options.ConnectTimeout = 2000;
+            options.AsyncTimeout = 2000;
+            options.SyncTimeout = 2000;
+
+            options.KeepAlive = 30;
+
 
             return ConnectionMultiplexer.Connect(options);
         });
