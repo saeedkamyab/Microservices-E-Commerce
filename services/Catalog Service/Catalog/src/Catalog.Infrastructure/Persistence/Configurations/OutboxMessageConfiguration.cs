@@ -28,6 +28,9 @@ public sealed class OutboxMessageConfiguration
         builder.Property(x => x.LastError)
             .HasMaxLength(2000);
 
+        builder.Property(x => x.NextRetryAtUtc);
+        builder.Property(x => x.FailedAtUtc);
+
         builder.HasIndex(x => new
         {
             x.ProcessedAtUtc,

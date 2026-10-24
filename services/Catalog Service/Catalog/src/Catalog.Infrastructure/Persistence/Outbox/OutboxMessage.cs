@@ -15,4 +15,8 @@ public sealed class OutboxMessage
     public int RetryCount { get; set; }
 
     public string? LastError { get; set; }
+
+    public DateTime? NextRetryAtUtc { get; set; }
+
+    public DateTime? FailedAtUtc { get; set; }
 }

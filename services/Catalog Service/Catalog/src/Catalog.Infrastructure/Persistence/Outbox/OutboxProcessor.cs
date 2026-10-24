@@ -64,15 +64,20 @@ public sealed class OutboxProcessor(
                     cancellationToken);
 
             var message = await dbContext.OutboxMessages
-                .FromSqlRaw("""
-                SELECT *
-                FROM "OutboxMessages"
-                WHERE "ProcessedAtUtc" IS NULL
-                  AND "Type" = 'CacheInvalidation'
-                ORDER BY "CreatedAtUtc", "Id"
-                LIMIT 1
-                FOR UPDATE SKIP LOCKED
-                """)
+               .FromSqlRaw("""
+    SELECT *
+    FROM "OutboxMessages"
+    WHERE "ProcessedAtUtc" IS NULL
+      AND "FailedAtUtc" IS NULL
+      AND "Type" = 'CacheInvalidation'
+      AND (
+          "NextRetryAtUtc" IS NULL
+          OR "NextRetryAtUtc" <= NOW()
+      )
+    ORDER BY "CreatedAtUtc", "Id"
+    LIMIT 1
+    FOR UPDATE SKIP LOCKED
+    """)
                 .AsTracking()
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -124,36 +129,40 @@ public sealed class OutboxProcessor(
 
                 // Discard tracked state after rollback.
                 dbContext.ChangeTracker.Clear();
+                var retryCount = message.RetryCount + 1;
 
-                message.RetryCount++;
-                message.LastError = ex.Message.Length > 2000
-                    ? ex.Message[..2000]
-                    : ex.Message;
+                var retryDelay = TimeSpan.FromSeconds(
+                    Math.Min(60, Math.Pow(2, retryCount)));
 
                 try
                 {
-                    // Persist failure information separately.
-                    // The message remains available for retry.
-                    dbContext.OutboxMessages.Attach(message);
-
-                    dbContext.Entry(message)
-                        .Property(x => x.RetryCount)
-                        .IsModified = true;
-
-                    dbContext.Entry(message)
-                        .Property(x => x.LastError)
-                        .IsModified = true;
-
-                    await dbContext.SaveChangesAsync(
-                        cancellationToken);
+                    await dbContext.OutboxMessages
+                        .Where(x =>
+                            x.Id == message.Id &&
+                            x.ProcessedAtUtc == null &&
+                            x.FailedAtUtc == null)
+                        .ExecuteUpdateAsync(setters => setters
+                            .SetProperty(x => x.RetryCount, x => retryCount)
+                            .SetProperty(x => x.LastError,
+                                ex.Message.Length > 2000
+                                    ? ex.Message[..2000]
+                                    : ex.Message)
+                            .SetProperty(x => x.NextRetryAtUtc,
+                                retryCount >= 5
+                                    ? (DateTime?)null
+                                    : DateTime.UtcNow.Add(retryDelay))
+                            .SetProperty(x => x.FailedAtUtc,
+                                retryCount >= 5
+                                    ? DateTime.UtcNow
+                                    : (DateTime?)null),
+                            cancellationToken);
                 }
                 catch (Exception saveException)
                 {
                     logger.LogError(
                         saveException,
-                        "Failed to persist outbox error.");
-
-                    dbContext.ChangeTracker.Clear();
+                        "Failed to persist outbox failure for {MessageId}.",
+                        message.Id);
                 }
 
                 logger.LogWarning(
@@ -161,9 +170,8 @@ public sealed class OutboxProcessor(
                     "Outbox message {MessageId} failed.",
                     message.Id);
 
-                // Avoid immediately retrying the same failed
-                // message repeatedly in this processing cycle.
-                break;
+                // Continue processing other messages.
+                continue;
             }
         }
     }
