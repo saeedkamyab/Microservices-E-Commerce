@@ -1,4 +1,5 @@
 ﻿using Catalog.Application.Abstractions.Caching;
+using Catalog.Application.Caching;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
@@ -8,6 +9,7 @@ namespace Catalog.Application.Behaviors;
 public sealed class CachingBehavior<TRequest, TResponse>(
     ICacheService cacheService,
     ICacheVersionService versionService,
+    RedisCircuitBreaker circuitBreaker,
     ILogger<CachingBehavior<TRequest, TResponse>> logger)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
@@ -19,6 +21,16 @@ public sealed class CachingBehavior<TRequest, TResponse>(
     {
         if (request is not ICacheableQuery cacheable)
             return await next(cancellationToken);
+
+        if (circuitBreaker.IsOpen)
+        {
+            logger.LogDebug(
+                "Redis circuit is open. Bypassing cache for {RequestType}.",
+                typeof(TRequest).Name);
+
+            return await next(cancellationToken);
+        }
+
 
         long version;
         TResponse? cached;
@@ -40,6 +52,7 @@ public sealed class CachingBehavior<TRequest, TResponse>(
         }
         catch (Exception ex) when (IsCacheFailure(ex, cancellationToken))
         {
+            circuitBreaker.RecordFailure();
             logger.LogWarning(
                 ex,
                 "Cache read failed for {RequestType}. Bypassing cache.",
@@ -70,6 +83,8 @@ public sealed class CachingBehavior<TRequest, TResponse>(
         }
         catch (Exception ex) when (IsCacheFailure(ex, cancellationToken))
         {
+            circuitBreaker.RecordFailure();
+
             logger.LogWarning(
                 ex,
                 "Cache write failed for {RequestType}. Returning database result.",

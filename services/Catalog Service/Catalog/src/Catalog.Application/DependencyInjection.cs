@@ -1,8 +1,9 @@
 ﻿using Catalog.Application.Behaviors;
+using Catalog.Application.Caching;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using FluentValidation;
 namespace Catalog.Application;
 
 public static class DependencyInjection
@@ -24,7 +25,7 @@ public static class DependencyInjection
 
 
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-
+        services.AddSingleton<RedisCircuitBreaker>();
 
         return services;
     }
