@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Observability/">
+    <Project Path="Observability/Observability.csproj" />
+  </Folder>
+  <Folder Name="/SharedKernel/">
+    <Project Path="SharedKernel/SharedKernel.csproj" Id="0c475059-55f6-4015-8a8a-96b12586a5bb" />
+  </Folder>
+</Solution>
