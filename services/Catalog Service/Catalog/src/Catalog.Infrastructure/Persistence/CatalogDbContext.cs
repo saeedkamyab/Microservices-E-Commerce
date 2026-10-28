@@ -40,5 +40,39 @@ public class CatalogDbContext:DbContext, IUnitOfWork
         base.OnModelCreating(modelBuilder);
     }
 
+    public override async Task<int> SaveChangesAsync(
+    CancellationToken cancellationToken = default)
+    {
+        var productsWithDomainEvents = ChangeTracker
+            .Entries<Product>()
+            .Select(entry => entry.Entity)
+            .Where(product => product.DomainEvents.Count > 0)
+            .ToList();
 
+        var domainEvents = productsWithDomainEvents
+            .SelectMany(product => product.DomainEvents)
+            .ToList();
+
+        var outboxMessages = domainEvents
+            .Select(OutboxMessageFactory.Create)
+            .Where(message => message is not null)
+            .Select(message => message!)
+            .ToList();
+
+        if (outboxMessages.Count > 0)
+        {
+            await OutboxMessages.AddRangeAsync(
+                outboxMessages,
+                cancellationToken);
+        }
+
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        foreach (var product in productsWithDomainEvents)
+        {
+            product.ClearDomainEvents();
+        }
+
+        return result;
+    }
 }
