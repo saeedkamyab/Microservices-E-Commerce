@@ -73,4 +73,62 @@ public sealed class ProductActivatedOutboxTests(
                 .GetProperty("ProductId")
                 .GetGuid());
     }
+
+    [Fact]
+    public async Task SaveChangesAsync_WhenProductSaveFails_DoesNotPersistProductOrOutboxAndKeepsDomainEvent()
+    {
+        // Arrange
+        await using var scope = fixture.Services.CreateAsyncScope();
+
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<CatalogDbContext>();
+
+        var missingCategoryId = Guid.NewGuid();
+
+        var product = Product.Create(
+            ProductName.Create($"Invalid Product {Guid.NewGuid():N}"),
+            "Product with a missing category",
+            missingCategoryId,
+            Price.Create(100));
+
+        product.Activate();
+        dbContext.Products.Add(product);
+
+        // Act
+        await Assert.ThrowsAsync<DbUpdateException>(
+            () => dbContext.SaveChangesAsync(CancellationToken.None));
+
+   
+        Assert.Single(product.DomainEvents);
+
+        // Assert using a fresh DbContext, so we inspect persisted data.
+        await using var verificationScope =
+            fixture.Services.CreateAsyncScope();
+
+        var verificationDbContext = verificationScope.ServiceProvider
+            .GetRequiredService<CatalogDbContext>();
+
+        var productExists = await verificationDbContext.Products
+            .AsNoTracking()
+            .AnyAsync(x => x.Id == product.Id,CancellationToken.None);
+
+        Assert.False(productExists);
+
+        var outboxMessages = await verificationDbContext
+            .Set<OutboxMessage>()
+            .AsNoTracking()
+            .Where(x => x.Type == "ProductActivated")
+            .ToListAsync(CancellationToken.None);
+
+        var matchingMessageExists = outboxMessages.Any(message =>
+        {
+            using var payload = JsonDocument.Parse(message.Payload);
+
+            return payload.RootElement
+                .GetProperty("ProductId")
+                .GetGuid() == product.Id;
+        });
+
+        Assert.False(matchingMessageExists);
+    }
 }
