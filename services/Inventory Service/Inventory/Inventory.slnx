@@ -6,5 +6,7 @@
     <Project Path="src/Inventory.Domain/Inventory.Domain.csproj" />
     <Project Path="src/Inventory.Infrastructure/Inventory.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/Inventory.UnitTests/Inventory.UnitTests.csproj" Id="230afc18-575b-46ea-981a-b2ab144a7bd9" />
+  </Folder>
 </Solution>
