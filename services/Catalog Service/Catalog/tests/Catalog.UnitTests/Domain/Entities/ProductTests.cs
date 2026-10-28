@@ -171,6 +171,7 @@ public class ProductTests
         // Act
         product.Activate();
         // Assert
+        Assert.NotEmpty(product.DomainEvents);
         Assert.Equal(ProductStatus.Active, product.Status);
     }
     [Fact]

@@ -4,6 +4,7 @@ using Catalog.Infrastructure.Persistence.Outbox;
 using Catalog.IntegrationTests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+
 namespace Catalog.IntegrationTests.Outbox;
 
 public sealed class CacheInvalidationOutboxInterceptorTests(
