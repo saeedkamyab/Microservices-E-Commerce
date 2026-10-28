@@ -6,6 +6,7 @@
     <Project Path="src/Catalog.Infrastructure/Catalog.Infrastructure.csproj" Id="767574d6-e3aa-40a7-931f-6a21debd92ee" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Catalog.IntegrationTests/Catalog.IntegrationTests.csproj" Id="caedc677-d2e2-4c18-af9d-a6220564512a" />
     <Project Path="tests/Catalog.UnitTests/Catalog.UnitTests.csproj" />
   </Folder>
 </Solution>

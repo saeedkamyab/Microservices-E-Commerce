@@ -1,5 +1,7 @@
 ﻿using Catalog.Domain.Enums;
+using Catalog.Domain.Events;
 using Catalog.Domain.ValueObjects;
+using SharedKernel.Domain;
 
 namespace Catalog.Domain.Entities;
 
@@ -17,7 +19,10 @@ public sealed class Product
 
     public ProductStatus Status { get; private set; }
 
+    private readonly List<IDomainEvent> _domainEvents = new();
 
+    public IReadOnlyCollection<IDomainEvent> DomainEvents
+        => _domainEvents;
 
     private readonly List<ProductSpecification> _specifications = new();
     public IReadOnlyCollection<ProductSpecification> Specifications =>
@@ -121,6 +126,10 @@ public sealed class Product
 
         Status = ProductStatus.Active;
 
+        _domainEvents.Add(
+            new ProductActivatedDomainEvent(
+                Id,
+                DateTime.UtcNow));
     }
     public void Deactivate()
     {
@@ -175,5 +184,10 @@ public sealed class Product
             return;
 
         _specifications.Remove(specification);
+    }
+
+    public void ClearDomainEvents()
+    {
+        _domainEvents.Clear();
     }
 }
