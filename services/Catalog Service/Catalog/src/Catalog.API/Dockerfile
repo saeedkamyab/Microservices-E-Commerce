@@ -7,19 +7,23 @@ WORKDIR /src
 
 # Copy project files first
 # This allows Docker to cache the restore layer
-COPY ["src/Catalog.API/Catalog.API.csproj", "src/Catalog.API/"]
-COPY ["src/Catalog.Application/Catalog.Application.csproj", "src/Catalog.Application/"]
-COPY ["src/Catalog.Domain/Catalog.Domain.csproj", "src/Catalog.Domain/"]
-COPY ["src/Catalog.Infrastructure/Catalog.Infrastructure.csproj", "src/Catalog.Infrastructure/"]
+
+COPY ["services/Catalog Service/Catalog/src/Catalog.API/Catalog.API.csproj", "services/Catalog Service/Catalog/src/Catalog.API/"]
+COPY ["services/Catalog Service/Catalog/src/Catalog.Application/Catalog.Application.csproj", "services/Catalog Service/Catalog/src/Catalog.Application/"]
+COPY ["services/Catalog Service/Catalog/src/Catalog.Domain/Catalog.Domain.csproj", "services/Catalog Service/Catalog/src/Catalog.Domain/"]
+COPY ["services/Catalog Service/Catalog/src/Catalog.Infrastructure/Catalog.Infrastructure.csproj", "services/Catalog Service/Catalog/src/Catalog.Infrastructure/"]
+COPY ["building-blocks/BuildingBlocks/SharedKernel/SharedKernel.csproj", "building-blocks/BuildingBlocks/SharedKernel/"]
+
+
 
 # Restore dependencies
-RUN dotnet restore "src/Catalog.API/Catalog.API.csproj"
+RUN dotnet restore "services/Catalog Service/Catalog/src/Catalog.API/Catalog.API.csproj"
 
 # Copy source code
 COPY . .
 
 # Publish API
-WORKDIR "/src/src/Catalog.API"
+WORKDIR "/src/services/Catalog Service/Catalog/src/Catalog.API"
 
 RUN dotnet publish "Catalog.API.csproj" \
     -c Release \

@@ -3,6 +3,7 @@ using Catalog.Application.Abstractions.Persistence;
 using Catalog.Application.Abstractions.Persistence.Repositories;
 using Catalog.Application.Abstractions.Persistence.Repositories.Queries;
 using Catalog.Infrastructure.Caching;
+using Catalog.Infrastructure.Messaging;
 using Catalog.Infrastructure.Persistence;
 using Catalog.Infrastructure.Persistence.Interceptors;
 using Catalog.Infrastructure.Persistence.Outbox;
@@ -55,23 +56,24 @@ public static class DependencyInjection
 
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration =
-                configuration.GetConnectionString("Redis");
+            var redisConnectionString =
+                configuration.GetConnectionString("Redis")
+                ?? throw new InvalidOperationException(
+                    "Redis connection string is missing.");
 
+            var redisOptions =
+                ConfigurationOptions.Parse(redisConnectionString);
+
+            redisOptions.AbortOnConnectFail = false;
+            redisOptions.ConnectRetry = 2;
+            redisOptions.ConnectTimeout = 2000;
+            redisOptions.AsyncTimeout = 2000;
+            redisOptions.SyncTimeout = 2000;
+            redisOptions.KeepAlive = 30;
+
+            options.ConfigurationOptions = redisOptions;
             options.InstanceName = "catalog:";
-
-            options.ConfigurationOptions = new ConfigurationOptions
-            {
-                AbortOnConnectFail = false,
-                ConnectRetry = 2,
-                ConnectTimeout = 2000,
-                AsyncTimeout = 2000,
-                SyncTimeout = 2000,
-                KeepAlive = 30
-            };
-
         });
-
 
         services.AddSingleton<IConnectionMultiplexer>(_ =>
         {
@@ -94,11 +96,21 @@ public static class DependencyInjection
             return ConnectionMultiplexer.Connect(options);
         });
 
+
+        services.Configure<RabbitMqOptions>(
+    configuration.GetSection(RabbitMqOptions.SectionName));
+
+
         services.AddSingleton<ICacheService, RedisCacheService>();
         services.AddSingleton<ICacheVersionService, RedisCacheVersionService>();
         services.AddScoped<ICacheInvalidationContext,CacheInvalidationContext>();
         services.AddScoped<CacheInvalidationOutboxInterceptor>();
         services.AddHostedService<OutboxProcessor>();
+
+
+        services.AddSingleton<RabbitMqConnection>();
+        services.AddSingleton<RabbitMqPublisher>();
+        services.AddHostedService<ProductActivatedPublisher>();
 
         return services;
     }

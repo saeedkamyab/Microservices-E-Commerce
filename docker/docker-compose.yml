@@ -1,5 +1,7 @@
 services:
-
+#-------------*****----------------------------------------------------------------
+#-------------Redis----------------------------------------------------------------
+#-------------*****----------------------------------------------------------------
   redis:
     image: redis:7-alpine
     container_name: redis
@@ -16,6 +18,12 @@ services:
         retries: 5
     environment:
         ConnectionStrings__Redis: "redis:6379"
+
+
+
+#-------------********----------------------------------------------------------------
+#-------------Postgres----------------------------------------------------------------
+#-------------********----------------------------------------------------------------
 
   postgres:
     image: postgres:18
@@ -40,6 +48,39 @@ services:
         start_period: 10s
 
   
+  
+#-------------********----------------------------------------------------------------
+#-------------Rabbitmq----------------------------------------------------------------
+#-------------********----------------------------------------------------------------
+
+  
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: ecommerce-rabbitmq
+
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+  
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+#-------------***********----------------------------------------------------------------
+#-------------Catalog-Api----------------------------------------------------------------
+#-------------***********----------------------------------------------------------------
+  
   catalog-api:
     image: catalog-api:latest
     container_name: ecommerce-catalog-api
@@ -49,6 +90,10 @@ services:
         ConnectionStrings__CatalogDatabaseConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Maximum Pool Size=15"
         ConnectionStrings__Redis: "redis"
         OpenTelemetry__OtlpEndpoint: "http://otel-collector:4317"
+        RabbitMQ__HostName: "rabbitmq"
+        RabbitMQ__Port: "5672"
+        RabbitMQ__UserName: ${RABBITMQ_DEFAULT_USER}
+        RabbitMQ__Password: ${RABBITMQ_DEFAULT_PASS}
         
     ports:
       - "5001:8080"
@@ -58,7 +103,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-
+      rabbitmq:
+        condition: service_healthy
+        
     healthcheck:
       test:
         [
@@ -73,6 +120,9 @@ services:
       - default
       - observability
 
+#-------------***********----------------------------------------------------------------
+#-------------Api-Gateway----------------------------------------------------------------
+#-------------***********----------------------------------------------------------------
 
   api-gateway:
     image: api-gateway:latest
@@ -93,6 +143,12 @@ services:
     networks:
       - default
       - observability  
+
+
+
+#-------------**************----------------------------------------------------------------
+#-------------Backoffice-Web----------------------------------------------------------------
+#-------------**************----------------------------------------------------------------
 
   backoffice-web:
     image: backoffice-web:latest
@@ -119,6 +175,7 @@ services:
 volumes:
   redis-data:
   postgres-data:
+  rabbitmq_data:
   backoffice-dataprotection:
   
 networks:

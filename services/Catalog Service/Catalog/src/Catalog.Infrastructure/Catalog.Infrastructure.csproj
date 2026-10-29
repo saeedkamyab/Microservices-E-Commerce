@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.13" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.13" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
     <PackageReference Include="StackExchange.Redis" Version="3.4.20" />
   </ItemGroup>
 
@@ -31,10 +32,8 @@
     <Folder Include="Persistence\Migrations\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="SharedKernel">
-      <HintPath>..\..\..\..\..\building-blocks\BuildingBlocks\SharedKernel\bin\Debug\net10.0\SharedKernel.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\..\building-blocks\BuildingBlocks\SharedKernel\SharedKernel.csproj" />
+	</ItemGroup>
 
 </Project>
