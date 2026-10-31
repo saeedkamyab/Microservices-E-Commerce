@@ -14,6 +14,4 @@ public sealed class RabbitMqOptions
 
     public string ExchangeName { get; set; } = "catalog.events";
 
-    public string ProductActivatedRoutingKey { get; set; }
-    = "catalog.product.activated.v1";
 }

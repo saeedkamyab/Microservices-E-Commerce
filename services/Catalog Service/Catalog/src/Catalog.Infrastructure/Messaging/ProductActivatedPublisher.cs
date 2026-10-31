@@ -14,18 +14,15 @@ public sealed class ProductActivatedPublisher : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly RabbitMqPublisher _publisher;
-    private readonly RabbitMqOptions _options;
     private readonly ILogger<ProductActivatedPublisher> _logger;
 
     public ProductActivatedPublisher(
         IServiceScopeFactory scopeFactory,
         RabbitMqPublisher publisher,
-        IOptions<RabbitMqOptions> options,
         ILogger<ProductActivatedPublisher> logger)
     {
         _scopeFactory = scopeFactory;
         _publisher = publisher;
-        _options = options.Value;
         _logger = logger;
     }
 
@@ -85,7 +82,7 @@ public sealed class ProductActivatedPublisher : BackgroundService
                 var body = Encoding.UTF8.GetBytes(message.Payload);
 
                 await _publisher.PublishAsync(
-                    _options.ProductActivatedRoutingKey,
+                    CatalogRoutingKeys.ProductActivated,
                     body,
                     cancellationToken);
 

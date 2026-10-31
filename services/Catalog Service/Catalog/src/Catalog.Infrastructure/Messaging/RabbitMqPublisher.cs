@@ -5,7 +5,7 @@ namespace Catalog.Infrastructure.Messaging;
 public sealed class RabbitMqPublisher
 {
     private readonly RabbitMqConnection _connection;
-
+    private const string ExchangeName = "catalog.events";
     public RabbitMqPublisher(RabbitMqConnection connection)
     {
         _connection = connection;
@@ -28,23 +28,10 @@ public sealed class RabbitMqPublisher
             cancellationToken);
 
         await channel.ExchangeDeclareAsync(
-            exchange: "catalog.events",
+            exchange: ExchangeName,
             type: ExchangeType.Topic,
             durable: true,
             autoDelete: false,
-            cancellationToken: cancellationToken);
-
-        await channel.QueueDeclareAsync(
-    queue: "inventory.product-activated",
-    durable: true,
-    exclusive: false,
-    autoDelete: false,
-    cancellationToken: cancellationToken);
-
-        await channel.QueueBindAsync(
-            queue: "inventory.product-activated",
-            exchange: "catalog.events",
-            routingKey: "catalog.product.activated.v1",
             cancellationToken: cancellationToken);
 
         var properties = new BasicProperties
