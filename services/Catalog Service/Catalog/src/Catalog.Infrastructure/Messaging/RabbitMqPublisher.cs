@@ -41,7 +41,7 @@ public sealed class RabbitMqPublisher
         };
 
         await channel.BasicPublishAsync(
-            exchange: "catalog.events",
+            exchange: ExchangeName,
             routingKey: routingKey,
             mandatory: true,
             basicProperties: properties,
